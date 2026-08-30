@@ -97,8 +97,8 @@ export const AcousticWaveformVisualizer: React.FC<WaveformProps> = ({
           }`} />
           <span className="font-mono text-forest-200 font-semibold tracking-wide uppercase text-[11px]">
             {telemetry.activeJammingPulse || isTestingSweep 
-              ? '⚡ Ultrasonic Acoustic Jamming Burst' 
-              : (mode === 'AUTOMATIC' ? '📡 Continuous Frequency Sweep' : '🎯 AI Vision Standby Sweep')}
+              ? '⚡ Active Pest-Repelling Sound' 
+              : (mode === 'AUTOMATIC' ? '📡 Pitch-Shifting Sound Shield' : '🎯 AI Vision Guard (Silent Standby)')}
           </span>
         </div>
         {showDetails && (

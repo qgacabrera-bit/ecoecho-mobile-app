@@ -107,27 +107,27 @@ export const SettingsPage: React.FC = () => {
   };
 
   const protectedPests = [
-    { name: "Brown Planthopper", scientific: "Nilaparvata lugens", risk: "Primary Threat" },
-    { name: "Green Leafhopper", scientific: "Nephotettix virescens", risk: "Tungro Vector" },
-    { name: "Leaf Folder", scientific: "Cnaphalocrocis medinalis", risk: "Leaf Damage" },
-    { name: "Rice Bug", scientific: "Leptocorisa oratorius", risk: "Grain Sap Feeder" },
-    { name: "Rice Stem Borer", scientific: "Scirpophaga incertulas", risk: "Deadheart Pest" },
-    { name: "Whorl Maggot", scientific: "Hydrellia philippina", risk: "Seedling Damage" },
+    { name: "Brown Planthopper", local: "Ngusong Kabayo", scientific: "Nilaparvata lugens", risk: "Critical Threat" },
+    { name: "Green Leafhopper", local: "Berdeng Ngusong Kabayo", scientific: "Nephotettix virescens", risk: "Tungro Vector" },
+    { name: "Rice Leaf Folder", local: "Maniniklop ng Dahon", scientific: "Cnaphalocrocis medinalis", risk: "Leaf Roller" },
+    { name: "Rice Bug (Harang)", local: "Atangya / Harang", scientific: "Leptocorisa oratorius", risk: "Milky Grain Feeder" },
+    { name: "Rice Stem Borer", local: "Ubod ng Palay", scientific: "Scirpophaga incertulas", risk: "Deadheart Borer" },
+    { name: "Rice Hispa", local: "Hispa ng Palay", scientific: "Dicladispa armigera", risk: "Leaf Scraper" },
   ];
 
   return (
     <div className="space-y-5 animate-in fade-in duration-300 pb-6 max-w-5xl mx-auto">
       
-      {/* 1. Clean Header */}
-      <div className="bg-white/90 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-app-border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* 1. Header Card with AI Status */}
+      <div className="bg-white/95 p-5 sm:p-6 rounded-3xl border border-app-border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
-            <h2 className="text-xl font-black text-forest-950">Field Station & Protection Settings</h2>
-            <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
-              Production Active
+            <h2 className="text-xl sm:text-2xl font-black text-forest-950">Field Station & Protection Settings</h2>
+            <span className="bg-emerald-100 text-emerald-950 text-xs font-black px-2.5 py-0.5 rounded-full border border-emerald-300">
+              Active Guard
             </span>
           </div>
-          <p className="text-xs text-forest-700 mt-1">
+          <p className="text-xs text-forest-900 font-medium mt-1">
             Calibrate detection sensitivity, acoustic frequencies, and hardware connection.
           </p>
         </div>
@@ -136,44 +136,44 @@ export const SettingsPage: React.FC = () => {
         <div className="flex items-center space-x-2 shrink-0">
           <button
             onClick={testAIServer}
-            className="bg-forest-50 hover:bg-forest-100 text-forest-800 text-xs font-bold px-3 py-2 rounded-xl border border-forest-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="bg-forest-100 hover:bg-forest-200 text-forest-950 text-xs font-black px-3.5 py-2 rounded-xl border border-forest-300 flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Activity className="w-3.5 h-3.5 text-forest-600" />
+            <Activity className="w-4 h-4 text-forest-900" />
             <span>Check AI Status</span>
           </button>
-          <span className={`text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 border ${
-            aiServerCheck.online ? 'bg-emerald-50 text-emerald-900 border-emerald-200' : 'bg-solar-50 text-solar-900 border-solar-200'
+          <span className={`text-xs font-black px-3 py-2 rounded-xl flex items-center gap-1.5 border ${
+            aiServerCheck.online ? 'bg-emerald-100 text-emerald-950 border-emerald-300' : 'bg-solar-100 text-solar-950 border-solar-300'
           }`}>
-            <span className={`w-2 h-2 rounded-full ${aiServerCheck.online ? 'bg-emerald-500 animate-pulse' : 'bg-solar-500'}`} />
+            <span className={`w-2 h-2 rounded-full ${aiServerCheck.online ? 'bg-emerald-600 animate-pulse' : 'bg-solar-500'}`} />
             <span>{aiServerCheck.online ? 'AI Brain Online' : 'AI Standby'}</span>
           </span>
         </div>
       </div>
 
       {/* 2. Protected Rice Pests Section */}
-      <div className="bg-white/90 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-app-border shadow-xs space-y-3.5">
+      <div className="bg-white/95 p-5 sm:p-6 rounded-3xl border border-app-border shadow-xs space-y-3.5">
         <div className="flex items-center space-x-2">
-          <ShieldCheck className="w-5 h-5 text-emerald-600" />
-          <h3 className="text-base font-black text-forest-950">Active Defense Targets</h3>
+          <ShieldCheck className="w-5 h-5 text-emerald-700" />
+          <h3 className="text-base sm:text-lg font-black text-forest-950">Active Defense Target Species</h3>
         </div>
-        <p className="text-xs text-forest-700">
-          EcoEcho's vision model is trained to spot and repel these 6 key rice pests using ultrasonic frequencies:
+        <p className="text-xs text-forest-900 font-medium">
+          EcoEcho's camera and sound shield automatically recognize and repel these 6 key rice pests:
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
           {protectedPests.map((pest, idx) => (
-            <div key={idx} className="p-3 bg-forest-50/80 border border-forest-200/80 rounded-2xl flex items-center justify-between gap-2">
+            <div key={idx} className="p-3 bg-forest-50/90 border border-forest-200 rounded-2xl flex items-center justify-between gap-2">
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-forest-200/70 text-forest-800 flex items-center justify-center font-bold">
-                  <Bug className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-xl bg-forest-200 text-forest-950 flex items-center justify-center font-black">
+                  <Bug className="w-4 h-4 text-forest-950" />
                 </div>
                 <div>
                   <h4 className="text-xs font-black text-forest-950">{pest.name}</h4>
-                  <p className="text-[10px] text-forest-600 italic">{pest.scientific}</p>
+                  <p className="text-[10px] text-amber-900 font-black">{pest.local}</p>
                 </div>
               </div>
-              <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0">
-                Protected
+              <span className="bg-emerald-100 text-emerald-950 text-[10px] font-black px-2 py-0.5 rounded-md shrink-0 border border-emerald-300">
+                Guarded
               </span>
             </div>
           ))}
