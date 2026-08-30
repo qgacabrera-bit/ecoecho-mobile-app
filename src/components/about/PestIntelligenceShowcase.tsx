@@ -220,28 +220,28 @@ export const PestIntelligenceShowcase: React.FC = () => {
   };
 
   return (
-    <div className="bg-forest-950 text-white rounded-3xl border border-forest-800 shadow-2xl p-4 sm:p-7 space-y-6 relative overflow-hidden select-none">
+    <div className="bg-forest-950 text-white rounded-3xl border border-forest-800 shadow-2xl p-5 sm:p-8 space-y-6 relative overflow-hidden select-none">
       
-      {/* Background Glow */}
+      {/* Background Ambient Glow */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-forest-800/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-solar-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Top Header */}
-      <div className="relative z-10 text-center space-y-1.5 max-w-2xl mx-auto">
-        <div className="inline-flex items-center space-x-2 bg-forest-900/90 border border-forest-700/80 px-3.5 py-1 rounded-full text-xs font-black text-solar-400">
-          <ShieldAlert className="w-3.5 h-3.5 text-solar-400" />
-          <span>Crop Threat Intelligence</span>
+      {/* Clean Minimal Header (Matching Hardware Architecture Style) */}
+      <div className="relative z-10 space-y-1">
+        <div className="flex items-center space-x-2 text-solar-400 font-mono text-xs font-black uppercase tracking-wider">
+          <Bug className="w-4 h-4 text-solar-400" />
+          <span>TARGET PEST PROFILES</span>
         </div>
-        <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-          Target Pest Profiles
+        <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
+          Target Rice Pests & Defense
         </h3>
-        <p className="text-xs sm:text-sm text-forest-300 font-medium flex items-center justify-center gap-1.5">
+        <p className="text-xs sm:text-sm text-forest-300 font-medium flex items-center gap-1.5">
           <MoveHorizontal className="w-3.5 h-3.5 text-solar-400 animate-pulse" />
           <span>Swipe or drag horizontally to slide between pests</span>
         </p>
       </div>
 
-      {/* 3D CONTINUOUS SLIDING STAGE */}
+      {/* 3D CONTINUOUS SLIDING STAGE WITH GENEROUS VERTICAL SPACE */}
       <div 
         ref={containerRef}
         onTouchStart={handleTouchStart}
@@ -251,7 +251,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
-        className={`relative z-10 overflow-hidden py-4 min-h-[510px] sm:min-h-[550px] flex items-center justify-center perspective-[1200px] touch-pan-y ${
+        className={`relative z-10 overflow-hidden py-6 min-h-[580px] sm:min-h-[600px] flex items-center justify-center perspective-[1200px] touch-pan-y ${
           isDragging ? 'cursor-grabbing' : 'cursor-grab'
         }`}
       >
@@ -263,13 +263,13 @@ export const PestIntelligenceShowcase: React.FC = () => {
 
           // Responsive card step width for 1:1 tactile dragging physics
           const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-          const stepPx = isMobile ? 310 : 420;
+          const stepPx = isMobile ? 320 : 440;
           const fractionalOffset = diff + dragOffset / stepPx;
           const isCurrent = Math.abs(fractionalOffset) < 0.5;
 
-          // Calculate continuous 3D transforms based on finger drag
-          const translateX = fractionalOffset * (isMobile ? 92 : 72); // percentage shift
-          const scale = Math.max(0.78, 1 - Math.abs(fractionalOffset) * 0.16);
+          // Continuous 3D transforms based on finger drag
+          const translateX = fractionalOffset * (isMobile ? 96 : 76);
+          const scale = Math.max(0.78, 1 - Math.abs(fractionalOffset) * 0.15);
           const opacity = Math.max(0, 1 - Math.abs(fractionalOffset) * 0.65);
           const rotateY = fractionalOffset * -10;
           const zIndex = Math.round(50 - Math.abs(fractionalOffset) * 10);
@@ -293,85 +293,85 @@ export const PestIntelligenceShowcase: React.FC = () => {
                   ? 'none' 
                   : 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s ease',
               }}
-              className={`absolute w-[90%] sm:w-[82%] max-w-xl bg-gradient-to-b from-forest-900/95 via-forest-950/98 to-forest-900/95 border rounded-3xl p-5 sm:p-7 backdrop-blur-xl shadow-2xl space-y-4 will-change-transform ${
+              className={`absolute w-[92%] sm:w-[84%] max-w-xl bg-gradient-to-b from-forest-900/95 via-forest-950/98 to-forest-900/95 border rounded-3xl p-4 sm:p-6 backdrop-blur-xl shadow-2xl space-y-3.5 will-change-transform ${
                 isCurrent 
                   ? 'border-forest-600/90 shadow-[0_12px_45px_rgba(0,0,0,0.85)] pointer-events-auto' 
                   : 'border-forest-800/60 cursor-pointer pointer-events-auto filter blur-[0.5px]'
               }`}
             >
               {/* Card Top: Number + Golden Title + Threat Badge */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-forest-800 pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-forest-800 pb-2.5">
                 <div>
-                  <h4 className="text-lg sm:text-2xl font-black text-solar-400 tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                  <h4 className="text-base sm:text-xl font-black text-solar-400 tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
                     {pest.number}. {pest.name}
                   </h4>
-                  <div className="flex flex-wrap items-center gap-2 mt-1 text-xs">
-                    <span className="text-white font-bold bg-forest-800 px-2.5 py-0.5 rounded-lg border border-forest-700">
+                  <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-xs">
+                    <span className="text-white font-bold bg-forest-800 px-2 py-0.5 rounded-lg border border-forest-700 text-[11px]">
                       Local: {pest.localName}
                     </span>
-                    <span className="text-forest-400 font-mono text-[11px] italic">
+                    <span className="text-forest-400 font-mono text-[10px] italic">
                       ({pest.scientificName})
                     </span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${pest.threatBadge}`}>
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${pest.threatBadge}`}>
                     {pest.threatLevel} THREAT
                   </span>
                 </div>
               </div>
 
               {/* Card Middle: Image Placeholder Frame */}
-              <div className="relative rounded-2xl overflow-hidden bg-forest-950 border border-forest-800 shadow-inner aspect-video sm:aspect-2/1 flex flex-col items-center justify-center p-4 text-center group">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl bg-forest-900/90 border border-forest-700 flex items-center justify-center text-solar-400 mb-2 shadow-inner group-hover:scale-105 transition-transform duration-300">
-                  <Bug className="w-7 h-7 sm:w-8 sm:h-8" />
+              <div className="relative rounded-2xl overflow-hidden bg-forest-950 border border-forest-800 shadow-inner h-[130px] sm:h-[150px] flex flex-col items-center justify-center p-3 text-center group">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-forest-900/90 border border-forest-700 flex items-center justify-center text-solar-400 mb-1 shadow-inner group-hover:scale-105 transition-transform duration-300">
+                  <Bug className="w-6 h-6 sm:w-7 sm:h-7" />
                 </div>
 
-                <h5 className="text-sm sm:text-base font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                <h5 className="text-xs sm:text-sm font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                   {pest.imagePlaceholder}
                 </h5>
-                <p className="text-xs text-solar-300 font-bold mt-0.5">
+                <p className="text-[11px] text-solar-300 font-bold">
                   {pest.localName}
                 </p>
 
                 {/* AI Vision Optical Tag */}
-                <div className="absolute top-2.5 left-2.5 bg-emerald-500 text-forest-950 text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
-                  <Eye className="w-3.5 h-3.5" />
+                <div className="absolute top-2 left-2 bg-emerald-500 text-forest-950 text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                  <Eye className="w-3 h-3" />
                   <span>YOLO Target #{pest.id}</span>
                 </div>
 
                 {/* Repelling Frequency Tag */}
-                <div className="absolute top-2.5 right-2.5 bg-forest-900/90 text-solar-300 border border-forest-700 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg shadow-sm">
+                <div className="absolute top-2 right-2 bg-forest-900/90 text-solar-300 border border-forest-700 text-[9px] font-mono font-bold px-2 py-0.5 rounded-md shadow-sm">
                   {pest.targetFrequency}
                 </div>
 
                 {/* Bottom Photo Caption */}
-                <div className="absolute bottom-2 inset-x-2 bg-forest-950/90 px-3 py-1 rounded-xl text-[10px] text-forest-200 border border-forest-800 truncate font-medium">
+                <div className="absolute bottom-1.5 inset-x-2 bg-forest-950/90 px-2.5 py-0.5 rounded-lg text-[9px] text-forest-200 border border-forest-800 truncate font-medium">
                   📷 {pest.imageAlt}
                 </div>
               </div>
 
               {/* Card Bottom: Description & Damage Impact */}
-              <div className="space-y-3 pt-1">
-                <p className="text-xs sm:text-sm text-forest-100 leading-relaxed font-medium">
+              <div className="space-y-2.5 pt-0.5">
+                <p className="text-xs text-forest-100 leading-relaxed font-medium line-clamp-3 sm:line-clamp-none">
                   {pest.damageDescription}
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                  <div className="bg-rose-950/50 border border-rose-500/40 p-3 rounded-2xl flex items-start space-x-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
+                  <div className="bg-rose-950/50 border border-rose-500/40 p-2.5 rounded-2xl flex items-start space-x-2">
                     <TrendingDown className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                     <div>
-                      <span className="text-[10px] font-black uppercase text-rose-300 block">Crop Damage Risk:</span>
-                      <span className="text-xs font-black text-rose-100">{pest.damageLoss}</span>
+                      <span className="text-[9px] font-black uppercase text-rose-300 block">Crop Damage Risk:</span>
+                      <span className="text-[11px] font-black text-rose-100">{pest.damageLoss}</span>
                     </div>
                   </div>
 
-                  <div className="bg-forest-900/80 border border-solar-400/40 p-3 rounded-2xl flex items-start space-x-2.5">
+                  <div className="bg-forest-900/80 border border-solar-400/40 p-2.5 rounded-2xl flex items-start space-x-2">
                     <Radio className="w-4 h-4 text-solar-400 shrink-0 mt-0.5" />
                     <div>
-                      <span className="text-[10px] font-black uppercase text-solar-300 block">EcoEcho Sound Repel:</span>
-                      <span className="text-xs font-medium text-forest-100">{pest.acousticDefense}</span>
+                      <span className="text-[9px] font-black uppercase text-solar-300 block">EcoEcho Sound Repel:</span>
+                      <span className="text-[11px] font-medium text-forest-100">{pest.acousticDefense}</span>
                     </div>
                   </div>
                 </div>
@@ -382,7 +382,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
       </div>
 
       {/* BOTTOM CONTROLS (LEFT ARROW • GOLDEN BEADS • RIGHT ARROW) */}
-      <div className="relative z-10 flex items-center justify-between pt-4 border-t border-forest-800/80 max-w-xl mx-auto px-4">
+      <div className="relative z-10 flex items-center justify-between pt-3 border-t border-forest-800/80 max-w-xl mx-auto px-4">
         
         {/* Left Circular Arrow */}
         <button
