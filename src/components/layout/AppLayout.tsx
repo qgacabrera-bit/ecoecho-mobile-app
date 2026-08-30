@@ -77,8 +77,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               </div>
             </div>
 
-            {/* Center: Desktop Navigation Tabs (Horizontal Top Bar for md & up) */}
-            <nav className="hidden md:flex items-center space-x-1 bg-forest-900/80 p-1.5 rounded-2xl border border-forest-800">
+            {/* Center: Clean Floating Desktop Navigation Items */}
+            <nav className="hidden md:flex items-center space-x-1 lg:space-x-1.5">
               {desktopNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -89,10 +89,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       isActive
                         ? 'bg-solar-500 text-forest-950 shadow-sm'
-                        : 'text-forest-300 hover:text-white hover:bg-forest-800/60'
+                        : 'text-forest-200 hover:text-white hover:bg-forest-900/60'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-forest-950' : 'text-forest-400'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-forest-950' : 'text-forest-300'}`} />
                     <span>{item.label}</span>
                     {item.id === 'dashboard' && telemetry.activeJammingPulse && (
                       <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
