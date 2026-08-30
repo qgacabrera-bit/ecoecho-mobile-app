@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Bug, 
   AlertTriangle, 
@@ -11,7 +11,8 @@ import {
   Eye,
   Radio,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  MoveHorizontal
 } from 'lucide-react';
 
 interface PestProfile {
@@ -33,6 +34,9 @@ interface PestProfile {
 
 export const PestIntelligenceShowcase: React.FC = () => {
   const [selectedPestId, setSelectedPestId] = useState<number>(0);
+  const [dragStartX, setDragStartX] = useState<number | null>(null);
+  const [dragOffset, setDragOffset] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
 
   const pests: PestProfile[] = [
     {
@@ -168,6 +172,60 @@ export const PestIntelligenceShowcase: React.FC = () => {
     setSelectedPestId((prev) => (prev - 1 + pests.length) % pests.length);
   };
 
+  // Touch Swipe Handlers (Mobile)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setDragStartX(e.touches[0].clientX);
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (dragStartX === null) return;
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - dragStartX;
+    setDragOffset(Math.max(-140, Math.min(140, diff)));
+  };
+
+  const handleTouchEnd = () => {
+    if (dragOffset > 45) {
+      handlePrev();
+    } else if (dragOffset < -45) {
+      handleNext();
+    }
+    setDragStartX(null);
+    setDragOffset(0);
+    setIsDragging(false);
+  };
+
+  // Mouse Drag Handlers (Desktop)
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setDragStartX(e.clientX);
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || dragStartX === null) return;
+    const diff = e.clientX - dragStartX;
+    setDragOffset(Math.max(-140, Math.min(140, diff)));
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging) return;
+    if (dragOffset > 45) {
+      handlePrev();
+    } else if (dragOffset < -45) {
+      handleNext();
+    }
+    setDragStartX(null);
+    setDragOffset(0);
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      handleMouseUp();
+    }
+  };
+
   return (
     <div className="bg-forest-950 text-white rounded-3xl border border-forest-800 shadow-2xl p-5 sm:p-8 space-y-6 relative overflow-hidden select-none">
       
@@ -184,18 +242,34 @@ export const PestIntelligenceShowcase: React.FC = () => {
         <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
           Target Pest Profiles
         </h3>
-        <p className="text-xs sm:text-sm text-forest-300 font-medium">
-          Slide through the 6 destructive rice pests to see their damage and how EcoEcho repels them.
+        <p className="text-xs sm:text-sm text-forest-300 font-medium flex items-center justify-center gap-1.5">
+          <MoveHorizontal className="w-3.5 h-3.5 text-solar-400 animate-pulse" />
+          <span>Drag or swipe cards to navigate through all 6 pests</span>
         </p>
       </div>
 
-      {/* 3D PEEKING CAROUSEL VIEWPORT */}
-      <div className="relative z-10 overflow-hidden py-4 px-2 min-h-[480px] sm:min-h-[520px] flex items-center justify-center">
+      {/* 3D PEEKING CAROUSEL VIEWPORT WITH TOUCH / DRAG GESTURES */}
+      <div 
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        className={`relative z-10 overflow-hidden py-4 px-2 min-h-[480px] sm:min-h-[520px] flex items-center justify-center touch-pan-y ${
+          isDragging ? 'cursor-grabbing' : 'cursor-grab'
+        }`}
+      >
         
         {/* PREVIOUS CARD (PEEKING SILHOUETTE ON LEFT) */}
         <div 
           onClick={handlePrev}
-          className="absolute left-0 -translate-x-[62%] sm:-translate-x-[52%] lg:-translate-x-[42%] w-[85%] sm:w-[75%] lg:w-[60%] max-w-lg bg-forest-900/70 border border-forest-700/50 rounded-3xl p-5 sm:p-6 opacity-25 hover:opacity-40 scale-85 blur-[1px] transition-all duration-500 cursor-pointer pointer-events-auto z-0"
+          style={{
+            transform: `translateX(calc(-62% + ${dragOffset * 0.4}px)) scale(0.85)`,
+            transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease'
+          }}
+          className="absolute left-0 w-[85%] sm:w-[75%] lg:w-[60%] max-w-lg bg-forest-900/70 border border-forest-700/50 rounded-3xl p-5 sm:p-6 opacity-25 hover:opacity-40 blur-[1px] cursor-pointer pointer-events-auto z-0"
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-solar-400 font-black text-sm">{pests[prevPestIndex].number}. {pests[prevPestIndex].name}</span>
@@ -208,7 +282,13 @@ export const PestIntelligenceShowcase: React.FC = () => {
         </div>
 
         {/* ACTIVE CENTER CARD (THE HERO IN FOCUS) */}
-        <div className="relative z-20 w-full max-w-2xl bg-gradient-to-b from-forest-900/90 via-forest-950/95 to-forest-900/90 border border-forest-700/80 rounded-3xl p-5 sm:p-7 shadow-[0_10px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl space-y-4 animate-in fade-in zoom-in-95 duration-300">
+        <div 
+          style={{
+            transform: `translateX(${dragOffset}px) rotate(${dragOffset * 0.02}deg)`,
+            transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}
+          className="relative z-20 w-full max-w-2xl bg-gradient-to-b from-forest-900/90 via-forest-950/95 to-forest-900/90 border border-forest-700/80 rounded-3xl p-5 sm:p-7 shadow-[0_10px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl space-y-4 animate-in fade-in zoom-in-95 duration-300"
+        >
           
           {/* Card Top: Number + Golden Title + Threat Badge */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-forest-800 pb-3">
@@ -303,7 +383,11 @@ export const PestIntelligenceShowcase: React.FC = () => {
         {/* NEXT CARD (PEEKING SILHOUETTE ON RIGHT) */}
         <div 
           onClick={handleNext}
-          className="absolute right-0 translate-x-[62%] sm:translate-x-[52%] lg:translate-x-[42%] w-[85%] sm:w-[75%] lg:w-[60%] max-w-lg bg-forest-900/70 border border-forest-700/50 rounded-3xl p-5 sm:p-6 opacity-25 hover:opacity-40 scale-85 blur-[1px] transition-all duration-500 cursor-pointer pointer-events-auto z-0"
+          style={{
+            transform: `translateX(calc(62% + ${dragOffset * 0.4}px)) scale(0.85)`,
+            transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease'
+          }}
+          className="absolute right-0 w-[85%] sm:w-[75%] lg:w-[60%] max-w-lg bg-forest-900/70 border border-forest-700/50 rounded-3xl p-5 sm:p-6 opacity-25 hover:opacity-40 blur-[1px] cursor-pointer pointer-events-auto z-0"
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-solar-400 font-black text-sm">{pests[nextPestIndex].number}. {pests[nextPestIndex].name}</span>
@@ -317,7 +401,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
 
       </div>
 
-      {/* BOTTOM CONTROLS (EXACT INSPIRATION: LEFT ARROW • GOLDEN BEADS • RIGHT ARROW) */}
+      {/* BOTTOM CONTROLS (LEFT ARROW • GOLDEN BEADS • RIGHT ARROW) */}
       <div className="relative z-10 flex items-center justify-between pt-4 border-t border-forest-800/80 max-w-xl mx-auto px-4">
         
         {/* Left Circular Arrow */}
