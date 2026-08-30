@@ -43,7 +43,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* Ambient Rice Field Background Layer */}
       <div 
         className="fixed inset-0 pointer-events-none z-0 opacity-15 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url('/rice_field_bg.jpg')` }}
+        style={{ backgroundImage: `url('${import.meta.env.BASE_URL}rice_field_bg.jpg')` }}
       />
       <div className="fixed inset-0 pointer-events-none z-0 bg-gradient-to-b from-forest-950/5 via-transparent to-forest-950/10" />
 

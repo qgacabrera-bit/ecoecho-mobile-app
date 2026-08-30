@@ -117,7 +117,7 @@ export const HardwareExplodedView: React.FC = () => {
       <div className="absolute inset-0 z-0 overflow-hidden bg-forest-950 pointer-events-none select-none flex items-center justify-center">
         <video
           ref={videoRef}
-          src="/hardware_exploded_view.mp4"
+          src={`${import.meta.env.BASE_URL}hardware_exploded_view.mp4`}
           autoPlay
           loop
           muted
