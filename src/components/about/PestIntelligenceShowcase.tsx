@@ -178,21 +178,38 @@ export const PestIntelligenceShowcase: React.FC = () => {
           </p>
         </div>
 
-        {/* Carousel Navigation Arrows */}
+        {/* Carousel Navigation Beads & Arrows */}
         <div className="flex items-center space-x-2 shrink-0">
-          <span className="text-xs font-mono text-forest-900 font-black mr-1">
-            {selectedPestId + 1} / {pests.length}
-          </span>
+          
+          {/* 6 Interactive Indicator Beads */}
+          <div className="flex items-center space-x-1.5 mr-1 bg-forest-100/90 px-2 py-1.5 rounded-full border border-forest-300">
+            {pests.map((pest) => {
+              const isCurrent = selectedPestId === pest.id;
+              return (
+                <button
+                  key={pest.id}
+                  onClick={() => setSelectedPestId(pest.id)}
+                  className={`transition-all duration-300 cursor-pointer rounded-full ${
+                    isCurrent
+                      ? 'w-5 h-2.5 bg-forest-950 shadow-xs'
+                      : 'w-2.5 h-2.5 bg-forest-300 hover:bg-forest-600'
+                  }`}
+                  title={`View ${pest.name}`}
+                />
+              );
+            })}
+          </div>
+
           <button
             onClick={handlePrev}
-            className="p-2.5 rounded-xl bg-forest-100 hover:bg-forest-200 border border-forest-300 text-forest-950 font-bold transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-forest-100 hover:bg-forest-200 border border-forest-300 text-forest-950 font-bold transition-colors cursor-pointer"
             title="Previous Pest"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={handleNext}
-            className="p-2.5 rounded-xl bg-forest-100 hover:bg-forest-200 border border-forest-300 text-forest-950 font-bold transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-forest-100 hover:bg-forest-200 border border-forest-300 text-forest-950 font-bold transition-colors cursor-pointer"
             title="Next Pest"
           >
             <ChevronRight className="w-4 h-4" />
