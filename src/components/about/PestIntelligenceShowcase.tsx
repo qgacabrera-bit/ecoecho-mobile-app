@@ -59,7 +59,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
       imageSrc: `${import.meta.env.BASE_URL}brownplanthopper.jpg`,
       imageAlt: "Brown Planthopper (Nilaparvata lugens) on rice stem",
       sourceName: "TNAU Agritech Portal",
-      sourceUrl: "https://agritech.tnau.ac.in/"
+      sourceUrl: "https://agritech.tnau.ac.in/crop_protection/rice/crop_prot_crop_insectpest%20_cereals_paddy_12.html"
     },
     {
       id: 1,
@@ -81,7 +81,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
       imageSrc: `${import.meta.env.BASE_URL}greenleafhopper.jpg`,
       imageAlt: "Green Leafhopper (Nephotettix virescens) on leaf canopy",
       sourceName: "PlantwisePlus Knowledge Bank",
-      sourceUrl: "https://plantwiseplusknowledgebank.org/"
+      sourceUrl: "https://plantwiseplusknowledgebank.org/doi/full/10.1079/pwkb.20157800279"
     },
     {
       id: 2,
@@ -103,7 +103,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
       imageSrc: `${import.meta.env.BASE_URL}stemborer.jpg`,
       imageAlt: "Yellow Stem Borer moth on rice plant",
       sourceName: "IRRI Rice Knowledge Bank",
-      sourceUrl: "http://www.knowledgebank.irri.org/"
+      sourceUrl: "http://www.knowledgebank.irri.org/training/fact-sheets/pest-management/insects/item/stem-borer"
     },
     {
       id: 3,
@@ -125,7 +125,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
       imageSrc: `${import.meta.env.BASE_URL}rice%20leaf%20folder.jpg`,
       imageAlt: "Rice Leaf Folder folded blade and scraping damage",
       sourceName: "IRRI Rice Knowledge Bank",
-      sourceUrl: "http://www.knowledgebank.irri.org/"
+      sourceUrl: "http://www.knowledgebank.irri.org/training/fact-sheets/pest-management/insects/item/rice-leaffolder"
     },
     {
       id: 4,
@@ -147,7 +147,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
       imageSrc: `${import.meta.env.BASE_URL}rice%20bug.jpg`,
       imageAlt: "Rice Bug (Leptocorisa oratorius) feeding on grain panicle",
       sourceName: "IRRI Rice Knowledge Bank",
-      sourceUrl: "http://www.knowledgebank.irri.org/"
+      sourceUrl: "http://www.knowledgebank.irri.org/training/fact-sheets/pest-management/insects/item/rice-bug"
     },
     {
       id: 5,
@@ -169,7 +169,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
       imageSrc: `${import.meta.env.BASE_URL}rice%20hispa.jpg`,
       imageAlt: "Rice Hispa spiny black beetle on leaf blade",
       sourceName: "IRRI Rice Knowledge Bank",
-      sourceUrl: "http://www.knowledgebank.irri.org/"
+      sourceUrl: "http://www.knowledgebank.irri.org/training/fact-sheets/pest-management/insects/item/rice-hispa"
     }
   ];
 
@@ -252,7 +252,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
         </h3>
       </div>
 
-      {/* 3D CONTINUOUS SLIDING STAGE WITH GENEROUS ROOM */}
+      {/* 3D CONTINUOUS SLIDING STAGE WITH SQUARE PICTURES */}
       <div 
         ref={containerRef}
         onTouchStart={handleTouchStart}
@@ -262,7 +262,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
-        className={`relative z-10 overflow-hidden py-4 min-h-[620px] sm:min-h-[660px] flex items-center justify-center perspective-[1200px] touch-pan-y ${
+        className={`relative z-10 overflow-hidden py-4 min-h-[640px] sm:min-h-[680px] flex items-center justify-center perspective-[1200px] touch-pan-y ${
           isDragging ? 'cursor-grabbing' : 'cursor-grab'
         }`}
       >
@@ -333,8 +333,8 @@ export const PestIntelligenceShowcase: React.FC = () => {
                 </div>
               </div>
 
-              {/* Card Middle: Real Photo Showcase Frame */}
-              <div className="relative rounded-2xl overflow-hidden bg-forest-950 border border-forest-800 shadow-inner h-[170px] sm:h-[210px] flex items-center justify-center group">
+              {/* Card Middle: Centered SQUARE Photo Showcase Frame */}
+              <div className="relative rounded-3xl overflow-hidden bg-forest-950 border border-forest-800/80 shadow-lg aspect-square w-full max-w-[200px] sm:max-w-[230px] mx-auto flex items-center justify-center group my-1">
                 <img 
                   src={pest.imageSrc} 
                   alt={pest.imageAlt}
@@ -343,37 +343,26 @@ export const PestIntelligenceShowcase: React.FC = () => {
                 />
 
                 {/* Subtle Gradient Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-forest-950/90 via-transparent to-forest-950/40 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-forest-950/80 via-transparent to-forest-950/30 pointer-events-none" />
 
                 {/* AI Vision Optical Tag */}
-                <div className="absolute top-2.5 left-2.5 bg-emerald-500 text-forest-950 text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md">
-                  <Eye className="w-3.5 h-3.5" />
+                <div className="absolute top-2.5 left-2.5 bg-emerald-500 text-forest-950 text-[9px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md">
+                  <Eye className="w-3 h-3" />
                   <span>YOLO Target #{pest.id}</span>
                 </div>
 
                 {/* Repelling Frequency Tag */}
-                <div className="absolute top-2.5 right-2.5 bg-forest-950/90 text-solar-300 border border-forest-700 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg shadow-md backdrop-blur-xs">
+                <div className="absolute top-2.5 right-2.5 bg-forest-950/90 text-solar-300 border border-forest-700 text-[9px] font-mono font-bold px-2 py-0.5 rounded-md shadow-md backdrop-blur-xs">
                   {pest.targetFrequency}
                 </div>
 
-                {/* Bottom Source Citation & Photo Caption */}
-                <div className="absolute bottom-2 inset-x-2 bg-forest-950/95 px-3 py-1 rounded-xl text-[10px] text-forest-200 border border-forest-800 flex items-center justify-between gap-2 shadow-md backdrop-blur-xs">
-                  <span className="truncate font-medium">📷 {pest.imageAlt}</span>
-                  <a 
-                    href={pest.sourceUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-1 text-solar-400 hover:text-solar-300 font-mono font-bold shrink-0 transition-colors cursor-pointer"
-                    title={`View official source at ${pest.sourceName}`}
-                  >
-                    <span>{pest.sourceName}</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+                {/* Photo Caption Overlay at Bottom of Square */}
+                <div className="absolute bottom-2 inset-x-2 bg-forest-950/90 px-2 py-0.5 rounded-lg text-[9px] text-forest-200 border border-forest-800 text-center truncate font-medium backdrop-blur-xs">
+                  📷 {pest.imageAlt}
                 </div>
               </div>
 
-              {/* Card Bottom: Description & Damage Impact */}
+              {/* Card Bottom: Description, Damage Impact & 'Learn More' Button */}
               <div className="space-y-3 pt-1">
                 <p className="text-xs sm:text-sm text-forest-100 leading-relaxed font-medium">
                   {pest.damageDescription}
@@ -395,6 +384,24 @@ export const PestIntelligenceShowcase: React.FC = () => {
                       <span className="text-xs font-medium text-forest-100">{pest.acousticDefense}</span>
                     </div>
                   </div>
+                </div>
+
+                {/* 'Learn More' Action Link Button */}
+                <div className="pt-2 flex items-center justify-between border-t border-forest-800/80">
+                  <span className="text-[11px] text-forest-400 font-medium">
+                    Verified Source: {pest.sourceName}
+                  </span>
+                  <a 
+                    href={pest.sourceUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1.5 bg-solar-500/20 hover:bg-solar-500/30 text-solar-300 hover:text-solar-200 border border-solar-400/40 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all shadow-xs cursor-pointer"
+                    title={`Read complete official research sheet for ${pest.name}`}
+                  >
+                    <span>Learn More</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
                 </div>
               </div>
             </div>
