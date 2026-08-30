@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bug, 
   AlertTriangle, 
@@ -9,13 +9,14 @@ import {
   Volume2,
   TrendingDown,
   Eye,
-  Info,
   Radio,
-  Sparkles
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 
 interface PestProfile {
   id: number;
+  number: string;
   name: string;
   localName: string;
   scientificName: string;
@@ -36,56 +37,59 @@ export const PestIntelligenceShowcase: React.FC = () => {
   const pests: PestProfile[] = [
     {
       id: 0,
+      number: "1",
       name: "Brown Planthopper",
       localName: "Kayumangging Ngusong Kabayo",
       scientificName: "Nilaparvata lugens",
       threatLevel: "CRITICAL",
-      threatBadge: "bg-rose-600 text-white font-black",
+      threatBadge: "bg-rose-500/20 text-rose-300 border border-rose-500/50",
       damageLoss: "Up to 100% Crop Loss (Hopperburn)",
       symptoms: [
-        "Hopperburn: Circular patches of rice plants turn yellow, dry up, and die rapidly",
+        "Hopperburn: Circular patches of rice plants turn yellow, dry up, and collapse",
         "Spreads deadly viral diseases that stunt plant growth",
-        "Large swarms suck sap from lower rice stems"
+        "Dense swarms suck sap from lower rice stems"
       ],
-      damageDescription: "These pests attack in massive swarms at the base of rice stems. They suck out plant sap until entire fields dry up and collapse in just a few days if left untreated.",
-      acousticDefense: "The station emits high-pitch acoustic pulses that scramble their communication and mating calls, forcing them to stop feeding and fly away from your field.",
+      damageDescription: "Insects congregate in swarms at the base of rice stalks, extracting sap until entire patches of the crop collapse. Untreated swarms can wipe out entire hectarages in under 7 days.",
+      acousticDefense: "The station emits high-pitch acoustic pulses that scramble their communication and mating calls, forcing them to stop feeding and vacate the field.",
       targetFrequency: "24.5 kHz – 38.0 kHz",
       imagePlaceholder: "Brown Planthopper on Rice Stalk",
       imageAlt: "Brown Planthopper adult feeding on lower rice stem"
     },
     {
       id: 1,
+      number: "2",
       name: "Green Leafhopper",
       localName: "Berdeng Ngusong Kabayo",
       scientificName: "Nephotettix virescens",
       threatLevel: "CRITICAL",
-      threatBadge: "bg-rose-600 text-white font-black",
+      threatBadge: "bg-rose-500/20 text-rose-300 border border-rose-500/50",
       damageLoss: "50% – 80% Yield Loss (Tungro Disease)",
       symptoms: [
-        "Carries the dreaded Tungro virus: Leaves turn orange-yellow and plants stay stunted",
+        "Carries Tungro virus: Leaves turn orange-yellow and plants stay stunted",
         "Rice heads emerge late or produce empty, useless grains",
         "Feeds on leaf tips and young stalks"
       ],
-      damageDescription: "Even a small number of green leafhoppers can spread the devastating Tungro disease across your whole field, ruining your harvest before grains can form.",
-      acousticDefense: "Focused directional sound triggers their natural danger flight response, driving leafhoppers out of the rice canopy before they can spread viruses.",
+      damageDescription: "Even a small number of green leafhoppers can spread devastating Tungro disease across your whole field, ruining your harvest before grains can form.",
+      acousticDefense: "Focused directional sound triggers their danger flight response, driving leafhoppers out of the canopy before they can spread viruses.",
       targetFrequency: "28.0 kHz – 42.0 kHz",
       imagePlaceholder: "Green Leafhopper on Rice Leaf",
       imageAlt: "Green Leafhopper perched on green rice canopy"
     },
     {
       id: 2,
+      number: "3",
       name: "Rice Stem Borer",
       localName: "Ubod ng Palay / Aksip",
       scientificName: "Scirpophaga incertulas",
       threatLevel: "HIGH",
-      threatBadge: "bg-amber-600 text-white font-black",
+      threatBadge: "bg-amber-500/20 text-amber-300 border border-amber-500/50",
       damageLoss: "30% – 60% Crop Damage (Whiteheads)",
       symptoms: [
         "'Deadhearts': Center shoots wither and die during early tillering",
         "'Whiteheads': Grain heads turn empty white during harvest stage",
         "Worms bore holes and eat the inside of rice stems"
       ],
-      damageDescription: "Stem borer caterpillars bore directly into the center of the rice stem, cutting off nutrients from the inside. When heads turn white, zero grains can be harvested.",
+      damageDescription: "Stem borer caterpillars bore directly into the center of the rice stem, severing nutrients from the inside out. When heads turn white, zero grains can be harvested.",
       acousticDefense: "Targeted frequencies irritate adult moths and disrupt egg-laying, preventing worms from ever hatching and boring into your crop stems.",
       targetFrequency: "22.0 kHz – 36.0 kHz",
       imagePlaceholder: "Rice Stem Borer Damage & Larva",
@@ -93,18 +97,19 @@ export const PestIntelligenceShowcase: React.FC = () => {
     },
     {
       id: 3,
+      number: "4",
       name: "Rice Leaf Folder",
       localName: "Maniniklop ng Dahon",
       scientificName: "Cnaphalocrocis medinalis",
       threatLevel: "HIGH",
-      threatBadge: "bg-amber-600 text-white font-black",
+      threatBadge: "bg-amber-500/20 text-amber-300 border border-amber-500/50",
       damageLoss: "25% – 50% Leaf Destruction",
       symptoms: [
         "Leaves are folded lengthwise and tied together with silk threads",
         "White transparent streaks appear where green leaf tissue was eaten",
         "Damaged leaves cannot feed grain panicles"
       ],
-      damageDescription: "Caterpillars roll the green leaf blade into a tube, hide inside, and scrape away the green tissue. Severe attacks leave entire rice fields looking white and scorched.",
+      damageDescription: "Caterpillars roll the green leaf blade into a tube, hide inside, and scrape away the green tissue. Severe attacks leave entire fields looking white and scorched.",
       acousticDefense: "Rapid sound vibrations agitate the leaves, discouraging moths from landing and disrupting caterpillar feeding inside rolled leaves.",
       targetFrequency: "30.0 kHz – 44.0 kHz",
       imagePlaceholder: "Rice Leaf Folder Folded Blade",
@@ -112,11 +117,12 @@ export const PestIntelligenceShowcase: React.FC = () => {
     },
     {
       id: 4,
+      number: "5",
       name: "Rice Bug (Harang)",
       localName: "Atangya / Harang / Gandang Palay",
       scientificName: "Leptocorisa oratorius",
       threatLevel: "HIGH",
-      threatBadge: "bg-amber-600 text-white font-black",
+      threatBadge: "bg-amber-500/20 text-amber-300 border border-amber-500/50",
       damageLoss: "40% – 70% Grain Quality Ruined",
       symptoms: [
         "Punctures and sucks milky sap from developing rice grains",
@@ -131,11 +137,12 @@ export const PestIntelligenceShowcase: React.FC = () => {
     },
     {
       id: 5,
+      number: "6",
       name: "Rice Hispa",
       localName: "Hispa ng Palay (Spiny Beetle)",
       scientificName: "Dicladispa armigera",
       threatLevel: "MODERATE",
-      threatBadge: "bg-emerald-700 text-white font-black",
+      threatBadge: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50",
       damageLoss: "20% – 45% Leaf Loss",
       symptoms: [
         "Small spiny black beetles scrape long white parallel lines on leaves",
@@ -150,7 +157,8 @@ export const PestIntelligenceShowcase: React.FC = () => {
     }
   ];
 
-  const currentPest = pests[selectedPestId] || pests[0];
+  const prevPestIndex = (selectedPestId - 1 + pests.length) % pests.length;
+  const nextPestIndex = (selectedPestId + 1) % pests.length;
 
   const handleNext = () => {
     setSelectedPestId((prev) => (prev + 1) % pests.length);
@@ -161,210 +169,193 @@ export const PestIntelligenceShowcase: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-5 sm:p-7 border border-app-border shadow-sm space-y-5">
+    <div className="bg-forest-950 text-white rounded-3xl border border-forest-800 shadow-2xl p-5 sm:p-8 space-y-6 relative overflow-hidden select-none">
       
-      {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-forest-100 pb-4">
-        <div>
-          <div className="inline-flex items-center space-x-2 bg-amber-100 border border-amber-300/80 px-3 py-1 rounded-full text-xs font-black text-amber-950 mb-1.5">
-            <ShieldAlert className="w-3.5 h-3.5 text-amber-900" />
-            <span>Target Rice Pests & Crop Damage</span>
-          </div>
-          <h3 className="text-xl sm:text-2xl font-black tracking-tight text-forest-950">
-            Pest Profiles & Defense Guide
-          </h3>
-          <p className="text-xs text-forest-900 font-medium mt-0.5">
-            Select a pest below to see the crop damage it causes and how EcoEcho's sound stops them.
-          </p>
-        </div>
+      {/* Background Ambience */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-forest-800/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-solar-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Carousel Navigation Beads & Arrows */}
-        <div className="flex items-center space-x-2 shrink-0">
-          
-          {/* 6 Interactive Indicator Beads */}
-          <div className="flex items-center space-x-1.5 mr-1 bg-forest-100/90 px-2 py-1.5 rounded-full border border-forest-300">
-            {pests.map((pest) => {
-              const isCurrent = selectedPestId === pest.id;
-              return (
-                <button
-                  key={pest.id}
-                  onClick={() => setSelectedPestId(pest.id)}
-                  className={`transition-all duration-300 cursor-pointer rounded-full ${
-                    isCurrent
-                      ? 'w-5 h-2.5 bg-forest-950 shadow-xs'
-                      : 'w-2.5 h-2.5 bg-forest-300 hover:bg-forest-600'
-                  }`}
-                  title={`View ${pest.name}`}
-                />
-              );
-            })}
-          </div>
-
-          <button
-            onClick={handlePrev}
-            className="p-2 rounded-xl bg-forest-100 hover:bg-forest-200 border border-forest-300 text-forest-950 font-bold transition-colors cursor-pointer"
-            title="Previous Pest"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleNext}
-            className="p-2 rounded-xl bg-forest-100 hover:bg-forest-200 border border-forest-300 text-forest-950 font-bold transition-colors cursor-pointer"
-            title="Next Pest"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+      {/* Top Header */}
+      <div className="relative z-10 text-center space-y-1.5 max-w-2xl mx-auto">
+        <div className="inline-flex items-center space-x-2 bg-forest-900/90 border border-forest-700/80 px-3.5 py-1 rounded-full text-xs font-black text-solar-400">
+          <ShieldAlert className="w-3.5 h-3.5 text-solar-400" />
+          <span>Crop Threat Intelligence</span>
         </div>
+        <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+          Target Pest Profiles
+        </h3>
+        <p className="text-xs sm:text-sm text-forest-300 font-medium">
+          Slide through the 6 destructive rice pests to see their damage and how EcoEcho repels them.
+        </p>
       </div>
 
-      {/* High-Contrast Interactive Pest Navigation Tabs */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none">
-        {pests.map((pest) => {
-          const isSelected = selectedPestId === pest.id;
-          return (
-            <button
-              key={pest.id}
-              onClick={() => setSelectedPestId(pest.id)}
-              className={`px-3.5 py-2.5 rounded-2xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center space-x-2 border ${
-                isSelected
-                  ? 'bg-forest-950 text-white border-forest-900 shadow-md scale-[1.02]'
-                  : 'bg-forest-50 hover:bg-forest-100 text-forest-950 border-forest-300'
-              }`}
-            >
-              <Bug className={`w-4 h-4 ${isSelected ? 'text-solar-400' : 'text-forest-700'}`} />
-              <span>{pest.name}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Main Pest Profile Detail Card */}
-      <div className="bg-gradient-to-br from-forest-50 via-white to-forest-50/50 rounded-3xl p-5 sm:p-7 border border-forest-200 shadow-sm space-y-6">
+      {/* 3D PEEKING CAROUSEL VIEWPORT */}
+      <div className="relative z-10 overflow-hidden py-4 px-2 min-h-[480px] sm:min-h-[520px] flex items-center justify-center">
         
-        {/* Top Header: Common Name + Local Filipino Name */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-forest-200 pb-4">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h4 className="text-xl sm:text-2xl font-black text-forest-950">
-                {currentPest.name}
-              </h4>
-              <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${currentPest.threatBadge}`}>
-                {currentPest.threatLevel} THREAT
-              </span>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs">
-              <span className="bg-amber-100 text-amber-950 font-black px-2.5 py-0.5 rounded-lg border border-amber-300">
-                Local: {currentPest.localName}
-              </span>
-              <span className="text-forest-700 font-mono text-[11px]">
-                (Scientific: {currentPest.scientificName})
-              </span>
-            </div>
+        {/* PREVIOUS CARD (PEEKING SILHOUETTE ON LEFT) */}
+        <div 
+          onClick={handlePrev}
+          className="absolute left-0 -translate-x-[62%] sm:-translate-x-[52%] lg:-translate-x-[42%] w-[85%] sm:w-[75%] lg:w-[60%] max-w-lg bg-forest-900/70 border border-forest-700/50 rounded-3xl p-5 sm:p-6 opacity-25 hover:opacity-40 scale-85 blur-[1px] transition-all duration-500 cursor-pointer pointer-events-auto z-0"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-solar-400 font-black text-sm">{pests[prevPestIndex].number}. {pests[prevPestIndex].name}</span>
+            <span className="text-[10px] text-forest-300 font-bold">{pests[prevPestIndex].localName}</span>
           </div>
-
-          {/* Maximum Potential Damage Loss Pill */}
-          <div className="bg-rose-100 border border-rose-300 px-3.5 py-2 rounded-2xl flex items-center space-x-2.5 text-rose-950 shrink-0">
-            <TrendingDown className="w-5 h-5 text-rose-700 shrink-0" />
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-rose-900 block leading-none">
-                Potential Damage If Untreated
-              </span>
-              <span className="text-sm font-black text-rose-950">
-                {currentPest.damageLoss}
-              </span>
-            </div>
+          <div className="w-full aspect-video rounded-2xl bg-forest-950 border border-forest-800 flex items-center justify-center text-forest-600 mb-3">
+            <Bug className="w-10 h-10 opacity-40" />
           </div>
+          <p className="text-xs text-forest-400 line-clamp-2">{pests[prevPestIndex].damageDescription}</p>
         </div>
 
-        {/* Content Layout: Left Picture Box | Right Practical Damage & Sound Solution */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* ACTIVE CENTER CARD (THE HERO IN FOCUS) */}
+        <div className="relative z-20 w-full max-w-2xl bg-gradient-to-b from-forest-900/90 via-forest-950/95 to-forest-900/90 border border-forest-700/80 rounded-3xl p-5 sm:p-7 shadow-[0_10px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl space-y-4 animate-in fade-in zoom-in-95 duration-300">
           
-          {/* Left (5 Cols): Pest Picture Frame */}
-          <div className="lg:col-span-5 space-y-3">
-            <div className="relative rounded-2xl overflow-hidden bg-forest-950 border border-forest-800 shadow-md aspect-video sm:aspect-4/3 flex flex-col items-center justify-center p-4 text-center group">
-              
-              {/* Visual Icon Box */}
-              <div className="w-16 h-16 rounded-3xl bg-forest-900 border border-forest-700 flex items-center justify-center text-solar-400 mb-3 shadow-inner group-hover:scale-110 transition-transform duration-300">
-                <Bug className="w-8 h-8" />
-              </div>
-
-              <div className="space-y-1">
-                <h5 className="text-sm font-black text-white">{currentPest.imagePlaceholder}</h5>
-                <p className="text-xs text-forest-200 font-bold">
-                  {currentPest.localName}
-                </p>
-              </div>
-
-              {/* Photo Caption */}
-              <div className="absolute bottom-2 inset-x-2 bg-forest-950/95 px-2.5 py-1 rounded-xl text-[10px] text-forest-100 border border-forest-800 truncate font-medium">
-                📷 {currentPest.imageAlt}
-              </div>
-
-              {/* AI Optical Eye Detection Badge */}
-              <div className="absolute top-2.5 left-2.5 bg-emerald-500 text-forest-950 text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
-                <Eye className="w-3.5 h-3.5" />
-                <span>AI Vision Recognized</span>
+          {/* Card Top: Number + Golden Title + Threat Badge */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-forest-800 pb-3">
+            <div>
+              <h4 className="text-lg sm:text-2xl font-black text-solar-400 tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                {pests[selectedPestId].number}. {pests[selectedPestId].name}
+              </h4>
+              <div className="flex flex-wrap items-center gap-2 mt-1 text-xs">
+                <span className="text-white font-bold bg-forest-800 px-2.5 py-0.5 rounded-lg border border-forest-700">
+                  Local: {pests[selectedPestId].localName}
+                </span>
+                <span className="text-forest-400 font-mono text-[11px] italic">
+                  ({pests[selectedPestId].scientificName})
+                </span>
               </div>
             </div>
 
-            {/* Repelling Frequency */}
-            <div className="bg-white p-3 rounded-2xl border border-forest-200 shadow-sm flex items-center justify-between text-xs">
-              <span className="text-forest-950 font-bold">Repelling Sound Pitch:</span>
-              <span className="font-mono font-black text-amber-950 bg-amber-100 px-2.5 py-0.5 rounded border border-amber-300">
-                {currentPest.targetFrequency}
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${pests[selectedPestId].threatBadge}`}>
+                {pests[selectedPestId].threatLevel} THREAT
               </span>
             </div>
           </div>
 
-          {/* Right (7 Cols): Plain English Crop Damage & Acoustic Solution */}
-          <div className="lg:col-span-7 space-y-4">
+          {/* Card Middle: Image Placeholder Container */}
+          <div className="relative rounded-2xl overflow-hidden bg-forest-950 border border-forest-800 shadow-inner aspect-video sm:aspect-2/1 flex flex-col items-center justify-center p-4 text-center group">
             
-            {/* How It Attacks Crops */}
-            <div className="space-y-1.5">
-              <h5 className="text-xs font-black uppercase tracking-wider text-forest-950 flex items-center gap-1.5">
-                <AlertTriangle className="w-4 h-4 text-rose-600" />
-                <span>How This Pest Damages Your Rice Crop</span>
-              </h5>
-              <p className="text-xs sm:text-sm text-forest-950 leading-relaxed font-medium">
-                {currentPest.damageDescription}
-              </p>
+            {/* Visual Bug Icon Glow */}
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl bg-forest-900/90 border border-forest-700 flex items-center justify-center text-solar-400 mb-2 shadow-inner group-hover:scale-105 transition-transform duration-300">
+              <Bug className="w-7 h-7 sm:w-8 sm:h-8" />
             </div>
 
-            {/* Key Field Symptoms */}
-            <div className="space-y-1.5">
-              <h5 className="text-xs font-black uppercase tracking-wider text-forest-950 flex items-center gap-1.5">
-                <Info className="w-4 h-4 text-amber-600" />
-                <span>What to Look for in the Field</span>
-              </h5>
-              <div className="space-y-2">
-                {currentPest.symptoms.map((symptom, sIdx) => (
-                  <div key={sIdx} className="flex items-start space-x-2 text-xs sm:text-sm text-forest-950 bg-white p-3 rounded-xl border border-forest-200 font-medium">
-                    <span className="w-2 h-2 rounded-full bg-rose-600 mt-1.5 shrink-0" />
-                    <span>{symptom}</span>
-                  </div>
-                ))}
-              </div>
+            <h5 className="text-sm sm:text-base font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              {pests[selectedPestId].imagePlaceholder}
+            </h5>
+            <p className="text-xs text-solar-300 font-bold mt-0.5">
+              {pests[selectedPestId].localName}
+            </p>
+
+            {/* AI Vision Optical Tag */}
+            <div className="absolute top-2.5 left-2.5 bg-emerald-500 text-forest-950 text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+              <Eye className="w-3.5 h-3.5" />
+              <span>YOLO Target #{pests[selectedPestId].id}</span>
             </div>
 
-            {/* How EcoEcho Stops It */}
-            <div className="bg-forest-950 text-white p-4 sm:p-5 rounded-2xl border border-forest-800 space-y-2 shadow-md">
-              <div className="flex items-center space-x-2">
-                <div className="w-7 h-7 rounded-lg bg-solar-500/20 text-solar-400 flex items-center justify-center">
-                  <Radio className="w-4 h-4" />
+            {/* Repelling Frequency Tag */}
+            <div className="absolute top-2.5 right-2.5 bg-forest-900/90 text-solar-300 border border-forest-700 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg shadow-sm">
+              {pests[selectedPestId].targetFrequency}
+            </div>
+
+            {/* Bottom Photo Caption */}
+            <div className="absolute bottom-2 inset-x-2 bg-forest-950/90 px-3 py-1 rounded-xl text-[10px] text-forest-200 border border-forest-800 truncate font-medium">
+              📷 {pests[selectedPestId].imageAlt}
+            </div>
+          </div>
+
+          {/* Card Bottom: Description & Damage Impact */}
+          <div className="space-y-3 pt-1">
+            
+            {/* Plain English Damage Description */}
+            <p className="text-xs sm:text-sm text-forest-100 leading-relaxed font-medium">
+              {pests[selectedPestId].damageDescription}
+            </p>
+
+            {/* Potential Damage Impact & Sound Solution Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+              
+              {/* Potential Loss Badge */}
+              <div className="bg-rose-950/50 border border-rose-500/40 p-3 rounded-2xl flex items-start space-x-2.5">
+                <TrendingDown className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-[10px] font-black uppercase text-rose-300 block">Crop Damage Risk:</span>
+                  <span className="text-xs font-black text-rose-100">{pests[selectedPestId].damageLoss}</span>
                 </div>
-                <h5 className="text-xs sm:text-sm font-black text-solar-300 uppercase tracking-wider">
-                  How EcoEcho's Sound Repels This Pest
-                </h5>
               </div>
-              <p className="text-xs sm:text-sm text-forest-100 leading-relaxed font-medium">
-                {currentPest.acousticDefense}
-              </p>
+
+              {/* Acoustic Jamming Defense */}
+              <div className="bg-forest-900/80 border border-solar-400/40 p-3 rounded-2xl flex items-start space-x-2.5">
+                <Radio className="w-4 h-4 text-solar-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-[10px] font-black uppercase text-solar-300 block">EcoEcho Sound Repel:</span>
+                  <span className="text-xs font-medium text-forest-100">{pests[selectedPestId].acousticDefense}</span>
+                </div>
+              </div>
+
             </div>
 
           </div>
 
         </div>
+
+        {/* NEXT CARD (PEEKING SILHOUETTE ON RIGHT) */}
+        <div 
+          onClick={handleNext}
+          className="absolute right-0 translate-x-[62%] sm:translate-x-[52%] lg:translate-x-[42%] w-[85%] sm:w-[75%] lg:w-[60%] max-w-lg bg-forest-900/70 border border-forest-700/50 rounded-3xl p-5 sm:p-6 opacity-25 hover:opacity-40 scale-85 blur-[1px] transition-all duration-500 cursor-pointer pointer-events-auto z-0"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-solar-400 font-black text-sm">{pests[nextPestIndex].number}. {pests[nextPestIndex].name}</span>
+            <span className="text-[10px] text-forest-300 font-bold">{pests[nextPestIndex].localName}</span>
+          </div>
+          <div className="w-full aspect-video rounded-2xl bg-forest-950 border border-forest-800 flex items-center justify-center text-forest-600 mb-3">
+            <Bug className="w-10 h-10 opacity-40" />
+          </div>
+          <p className="text-xs text-forest-400 line-clamp-2">{pests[nextPestIndex].damageDescription}</p>
+        </div>
+
+      </div>
+
+      {/* BOTTOM CONTROLS (EXACT INSPIRATION: LEFT ARROW • GOLDEN BEADS • RIGHT ARROW) */}
+      <div className="relative z-10 flex items-center justify-between pt-4 border-t border-forest-800/80 max-w-xl mx-auto px-4">
+        
+        {/* Left Circular Arrow */}
+        <button
+          onClick={handlePrev}
+          className="w-10 h-10 rounded-full bg-forest-900 hover:bg-forest-800 active:scale-95 border border-forest-700 flex items-center justify-center text-white transition-all cursor-pointer shadow-md"
+          title="Previous Pest"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+
+        {/* Center Golden Indicator Beads */}
+        <div className="flex items-center space-x-2.5">
+          {pests.map((pest) => {
+            const isCurrent = selectedPestId === pest.id;
+            return (
+              <button
+                key={pest.id}
+                onClick={() => setSelectedPestId(pest.id)}
+                className={`transition-all duration-300 cursor-pointer rounded-full ${
+                  isCurrent
+                    ? 'w-3.5 h-3.5 bg-solar-400 shadow-[0_0_12px_rgba(245,158,11,0.8)] scale-110'
+                    : 'w-2.5 h-2.5 bg-white/30 hover:bg-white/60'
+                }`}
+                title={`View ${pest.name}`}
+              />
+            );
+          })}
+        </div>
+
+        {/* Right Circular Arrow */}
+        <button
+          onClick={handleNext}
+          className="w-10 h-10 rounded-full bg-forest-900 hover:bg-forest-800 active:scale-95 border border-forest-700 flex items-center justify-center text-white transition-all cursor-pointer shadow-md"
+          title="Next Pest"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
 
       </div>
 
