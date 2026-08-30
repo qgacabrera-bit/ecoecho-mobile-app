@@ -6,7 +6,6 @@ import {
   ChevronRight, 
   ChevronLeft,
   TrendingDown,
-  Eye,
   Radio,
   MoveHorizontal,
   ExternalLink
@@ -131,7 +130,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
       id: 4,
       number: "5",
       name: "Rice Bug (Harang)",
-      localName: "Atangya / Harang / Gandang Palay",
+      localName: "Atangya / Harang",
       scientificName: "Leptocorisa oratorius",
       threatLevel: "HIGH",
       threatBadge: "bg-amber-500/20 text-amber-300 border border-amber-500/50",
@@ -153,7 +152,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
       id: 5,
       number: "6",
       name: "Rice Hispa",
-      localName: "Hispa ng Palay (Spiny Beetle)",
+      localName: "Hispa ng Palay",
       scientificName: "Dicladispa armigera",
       threatLevel: "MODERATE",
       threatBadge: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50",
@@ -194,9 +193,9 @@ export const PestIntelligenceShowcase: React.FC = () => {
   };
 
   const handleTouchEnd = () => {
-    if (dragOffset > 50) {
+    if (dragOffset > 45) {
       handlePrev();
-    } else if (dragOffset < -50) {
+    } else if (dragOffset < -45) {
       handleNext();
     }
     setDragStartX(null);
@@ -218,9 +217,9 @@ export const PestIntelligenceShowcase: React.FC = () => {
 
   const handleMouseUp = () => {
     if (!isDragging) return;
-    if (dragOffset > 50) {
+    if (dragOffset > 45) {
       handlePrev();
-    } else if (dragOffset < -50) {
+    } else if (dragOffset < -45) {
       handleNext();
     }
     setDragStartX(null);
@@ -235,7 +234,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
   };
 
   return (
-    <div className="bg-forest-950 text-white rounded-3xl border border-forest-800 shadow-2xl p-5 sm:p-8 space-y-6 relative overflow-hidden select-none">
+    <div className="bg-forest-950 text-white rounded-3xl border border-forest-800 shadow-2xl p-4 sm:p-7 space-y-4 relative overflow-hidden select-none">
       
       {/* Background Ambient Glow */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-forest-800/20 rounded-full blur-3xl pointer-events-none" />
@@ -247,12 +246,12 @@ export const PestIntelligenceShowcase: React.FC = () => {
           <Bug className="w-4 h-4 text-solar-400" />
           <span>TARGET PEST PROFILES</span>
         </div>
-        <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
+        <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
           Target Rice Pests & Defense
         </h3>
       </div>
 
-      {/* 3D CONTINUOUS SLIDING STAGE WITH SQUARE PICTURES */}
+      {/* 3D CONTINUOUS SLIDING STAGE */}
       <div 
         ref={containerRef}
         onTouchStart={handleTouchStart}
@@ -262,7 +261,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
-        className={`relative z-10 overflow-hidden py-4 min-h-[640px] sm:min-h-[680px] flex items-center justify-center perspective-[1200px] touch-pan-y ${
+        className={`relative z-10 overflow-hidden py-2 min-h-[520px] sm:min-h-[550px] flex items-center justify-center perspective-[1200px] touch-pan-y ${
           isDragging ? 'cursor-grabbing' : 'cursor-grab'
         }`}
       >
@@ -274,7 +273,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
 
           // Responsive card step width for 1:1 tactile dragging physics
           const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-          const stepPx = isMobile ? 320 : 440;
+          const stepPx = isMobile ? 310 : 420;
           const fractionalOffset = diff + dragOffset / stepPx;
           const isCurrent = Math.abs(fractionalOffset) < 0.5;
 
@@ -304,103 +303,77 @@ export const PestIntelligenceShowcase: React.FC = () => {
                   ? 'none' 
                   : 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s ease',
               }}
-              className={`absolute w-[92%] sm:w-[84%] max-w-xl bg-gradient-to-b from-forest-900/95 via-forest-950/98 to-forest-900/95 border rounded-3xl p-5 sm:p-7 backdrop-blur-xl shadow-2xl space-y-4 will-change-transform ${
+              className={`absolute w-[92%] sm:w-[84%] max-w-lg bg-gradient-to-b from-forest-900/95 via-forest-950/98 to-forest-900/95 border rounded-3xl p-4 sm:p-5 backdrop-blur-xl shadow-2xl space-y-3 will-change-transform ${
                 isCurrent 
                   ? 'border-forest-600/90 shadow-[0_14px_50px_rgba(0,0,0,0.85)] pointer-events-auto' 
                   : 'border-forest-800/60 cursor-pointer pointer-events-auto filter blur-[0.5px]'
               }`}
             >
-              {/* Card Top: Number + Golden Title + Threat Badge */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-forest-800 pb-3">
-                <div>
-                  <h4 className="text-lg sm:text-2xl font-black text-solar-400 tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+              {/* Card Top: Number + Golden Title + Inline Threat Badge */}
+              <div className="flex items-start justify-between gap-2 border-b border-forest-800/80 pb-2">
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-base sm:text-lg font-black text-solar-400 tracking-tight truncate">
                     {pest.number}. {pest.name}
                   </h4>
-                  <div className="flex flex-wrap items-center gap-2 mt-1 text-xs">
-                    <span className="text-white font-bold bg-forest-800 px-2.5 py-0.5 rounded-lg border border-forest-700">
-                      Local: {pest.localName}
-                    </span>
-                    <span className="text-forest-400 font-mono text-[11px] italic">
-                      ({pest.scientificName})
-                    </span>
-                  </div>
+                  <p className="text-[11px] sm:text-xs text-forest-300 font-bold mt-0.5 truncate">
+                    Local: {pest.localName} <span className="font-mono text-[10px] text-forest-400 font-normal">({pest.scientificName})</span>
+                  </p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${pest.threatBadge}`}>
-                    {pest.threatLevel} THREAT
-                  </span>
-                </div>
+                <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0 mt-0.5 ${pest.threatBadge}`}>
+                  {pest.threatLevel} THREAT
+                </span>
               </div>
 
-              {/* Card Middle: Centered SQUARE Photo Showcase Frame */}
-              <div className="relative rounded-3xl overflow-hidden bg-forest-950 border border-forest-800/80 shadow-lg aspect-square w-full max-w-[200px] sm:max-w-[230px] mx-auto flex items-center justify-center group my-1">
+              {/* Card Middle: 100% Pure, Unobstructed Square Photo Viewport */}
+              <div className="relative rounded-2xl overflow-hidden bg-forest-950 border border-forest-700/80 shadow-md w-[130px] h-[130px] sm:w-[155px] sm:h-[155px] mx-auto flex items-center justify-center group my-0.5">
                 <img 
                   src={pest.imageSrc} 
                   alt={pest.imageAlt}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-95 contrast-105"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-100 contrast-105"
                   loading="lazy"
                 />
-
-                {/* Subtle Gradient Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-forest-950/80 via-transparent to-forest-950/30 pointer-events-none" />
-
-                {/* AI Vision Optical Tag */}
-                <div className="absolute top-2.5 left-2.5 bg-emerald-500 text-forest-950 text-[9px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md">
-                  <Eye className="w-3 h-3" />
-                  <span>YOLO Target #{pest.id}</span>
-                </div>
-
-                {/* Repelling Frequency Tag */}
-                <div className="absolute top-2.5 right-2.5 bg-forest-950/90 text-solar-300 border border-forest-700 text-[9px] font-mono font-bold px-2 py-0.5 rounded-md shadow-md backdrop-blur-xs">
-                  {pest.targetFrequency}
-                </div>
-
-                {/* Photo Caption Overlay at Bottom of Square */}
-                <div className="absolute bottom-2 inset-x-2 bg-forest-950/90 px-2 py-0.5 rounded-lg text-[9px] text-forest-200 border border-forest-800 text-center truncate font-medium backdrop-blur-xs">
-                  📷 {pest.imageAlt}
-                </div>
               </div>
 
               {/* Card Bottom: Description, Damage Impact & 'Learn More' Button */}
-              <div className="space-y-3 pt-1">
-                <p className="text-xs sm:text-sm text-forest-100 leading-relaxed font-medium">
+              <div className="space-y-2.5 pt-0.5">
+                <p className="text-xs text-forest-100 leading-relaxed font-medium line-clamp-3 sm:line-clamp-none">
                   {pest.damageDescription}
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                  <div className="bg-rose-950/50 border border-rose-500/40 p-3 rounded-2xl flex items-start space-x-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
+                  <div className="bg-rose-950/50 border border-rose-500/40 p-2.5 rounded-2xl flex items-start space-x-2">
                     <TrendingDown className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                     <div>
-                      <span className="text-[10px] font-black uppercase text-rose-300 block">Crop Damage Risk:</span>
-                      <span className="text-xs font-black text-rose-100">{pest.damageLoss}</span>
+                      <span className="text-[9px] font-black uppercase text-rose-300 block">Crop Damage Risk:</span>
+                      <span className="text-[11px] font-black text-rose-100">{pest.damageLoss}</span>
                     </div>
                   </div>
 
-                  <div className="bg-forest-900/80 border border-solar-400/40 p-3 rounded-2xl flex items-start space-x-2.5">
+                  <div className="bg-forest-900/80 border border-solar-400/40 p-2.5 rounded-2xl flex items-start space-x-2">
                     <Radio className="w-4 h-4 text-solar-400 shrink-0 mt-0.5" />
                     <div>
-                      <span className="text-[10px] font-black uppercase text-solar-300 block">EcoEcho Sound Repel:</span>
-                      <span className="text-xs font-medium text-forest-100">{pest.acousticDefense}</span>
+                      <span className="text-[9px] font-black uppercase text-solar-300 block">EcoEcho Sound Repel:</span>
+                      <span className="text-[11px] font-medium text-forest-100">{pest.acousticDefense}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* 'Learn More' Action Link Button */}
                 <div className="pt-2 flex items-center justify-between border-t border-forest-800/80">
-                  <span className="text-[11px] text-forest-400 font-medium">
-                    Verified Source: {pest.sourceName}
+                  <span className="text-[10px] text-forest-400 font-medium truncate">
+                    Source: {pest.sourceName}
                   </span>
                   <a 
                     href={pest.sourceUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-1.5 bg-solar-500/20 hover:bg-solar-500/30 text-solar-300 hover:text-solar-200 border border-solar-400/40 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all shadow-xs cursor-pointer"
+                    className="inline-flex items-center gap-1.5 bg-solar-500/20 hover:bg-solar-500/30 text-solar-300 hover:text-solar-200 border border-solar-400/40 px-3 py-1 rounded-xl text-xs font-mono font-bold transition-all shadow-xs cursor-pointer shrink-0"
                     title={`Read complete official research sheet for ${pest.name}`}
                   >
                     <span>Learn More</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
               </div>
@@ -410,13 +383,13 @@ export const PestIntelligenceShowcase: React.FC = () => {
       </div>
 
       {/* BOTTOM CONTROLS (LEFT ARROW • GOLDEN BEADS • RIGHT ARROW + SUBTLE GESTURE HINT) */}
-      <div className="relative z-10 space-y-3 pt-3 border-t border-forest-800/80 max-w-xl mx-auto px-4">
+      <div className="relative z-10 space-y-2.5 pt-2 border-t border-forest-800/80 max-w-xl mx-auto px-4">
         
         <div className="flex items-center justify-between">
           {/* Left Circular Arrow */}
           <button
             onClick={handlePrev}
-            className="w-10 h-10 rounded-full bg-forest-900 hover:bg-forest-800 active:scale-95 border border-forest-700 flex items-center justify-center text-white transition-all cursor-pointer shadow-md"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-forest-900 hover:bg-forest-800 active:scale-95 border border-forest-700 flex items-center justify-center text-white transition-all cursor-pointer shadow-md"
             title="Previous Pest"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -444,7 +417,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
           {/* Right Circular Arrow */}
           <button
             onClick={handleNext}
-            className="w-10 h-10 rounded-full bg-forest-900 hover:bg-forest-800 active:scale-95 border border-forest-700 flex items-center justify-center text-white transition-all cursor-pointer shadow-md"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-forest-900 hover:bg-forest-800 active:scale-95 border border-forest-700 flex items-center justify-center text-white transition-all cursor-pointer shadow-md"
             title="Next Pest"
           >
             <ChevronRight className="w-5 h-5" />
@@ -452,7 +425,7 @@ export const PestIntelligenceShowcase: React.FC = () => {
         </div>
 
         {/* Bottom Swipe Hint with Reduced Opacity */}
-        <p className="text-[11px] sm:text-xs text-forest-300/60 font-medium flex items-center justify-center gap-1.5 text-center">
+        <p className="text-[11px] text-forest-300/60 font-medium flex items-center justify-center gap-1.5 text-center">
           <MoveHorizontal className="w-3.5 h-3.5 text-solar-400/70 animate-pulse" />
           <span>Swipe or drag horizontally to slide between pests</span>
         </p>
