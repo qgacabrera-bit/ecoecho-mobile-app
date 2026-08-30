@@ -8,7 +8,8 @@ import {
   TrendingDown,
   Eye,
   Radio,
-  MoveHorizontal
+  MoveHorizontal,
+  ExternalLink
 } from 'lucide-react';
 
 interface PestProfile {
@@ -24,8 +25,10 @@ interface PestProfile {
   damageDescription: string;
   acousticDefense: string;
   targetFrequency: string;
-  imagePlaceholder: string;
+  imageSrc: string;
   imageAlt: string;
+  sourceName: string;
+  sourceUrl: string;
 }
 
 export const PestIntelligenceShowcase: React.FC = () => {
@@ -53,8 +56,10 @@ export const PestIntelligenceShowcase: React.FC = () => {
       damageDescription: "Insects congregate in swarms at the base of rice stalks, extracting sap until entire patches of the crop collapse. Untreated swarms can wipe out entire hectarages in under 7 days.",
       acousticDefense: "The station emits high-pitch acoustic pulses that scramble their communication and mating calls, forcing them to stop feeding and vacate the field.",
       targetFrequency: "24.5 kHz – 38.0 kHz",
-      imagePlaceholder: "Brown Planthopper on Rice Stalk",
-      imageAlt: "Brown Planthopper adult feeding on lower rice stem"
+      imageSrc: `${import.meta.env.BASE_URL}brownplanthopper.jpg`,
+      imageAlt: "Brown Planthopper (Nilaparvata lugens) on rice stem",
+      sourceName: "TNAU Agritech Portal",
+      sourceUrl: "https://agritech.tnau.ac.in/"
     },
     {
       id: 1,
@@ -73,8 +78,10 @@ export const PestIntelligenceShowcase: React.FC = () => {
       damageDescription: "Even a small number of green leafhoppers can spread devastating Tungro disease across your whole field, ruining your harvest before grains can form.",
       acousticDefense: "Focused directional sound triggers their danger flight response, driving leafhoppers out of the canopy before they can spread viruses.",
       targetFrequency: "28.0 kHz – 42.0 kHz",
-      imagePlaceholder: "Green Leafhopper on Rice Leaf",
-      imageAlt: "Green Leafhopper perched on green rice canopy"
+      imageSrc: `${import.meta.env.BASE_URL}greenleafhopper.jpg`,
+      imageAlt: "Green Leafhopper (Nephotettix virescens) on leaf canopy",
+      sourceName: "PlantwisePlus Knowledge Bank",
+      sourceUrl: "https://plantwiseplusknowledgebank.org/"
     },
     {
       id: 2,
@@ -93,8 +100,10 @@ export const PestIntelligenceShowcase: React.FC = () => {
       damageDescription: "Stem borer caterpillars bore directly into the center of the rice stem, severing nutrients from the inside out. When heads turn white, zero grains can be harvested.",
       acousticDefense: "Targeted frequencies irritate adult moths and disrupt egg-laying, preventing worms from ever hatching and boring into your crop stems.",
       targetFrequency: "22.0 kHz – 36.0 kHz",
-      imagePlaceholder: "Rice Stem Borer Damage & Larva",
-      imageAlt: "Stem borer moth and rice stem deadheart damage"
+      imageSrc: `${import.meta.env.BASE_URL}stemborer.jpg`,
+      imageAlt: "Yellow Stem Borer moth on rice plant",
+      sourceName: "IRRI Rice Knowledge Bank",
+      sourceUrl: "http://www.knowledgebank.irri.org/"
     },
     {
       id: 3,
@@ -113,8 +122,10 @@ export const PestIntelligenceShowcase: React.FC = () => {
       damageDescription: "Caterpillars roll the green leaf blade into a tube, hide inside, and scrape away the green tissue. Severe attacks leave entire fields looking white and scorched.",
       acousticDefense: "Rapid sound vibrations agitate the leaves, discouraging moths from landing and disrupting caterpillar feeding inside rolled leaves.",
       targetFrequency: "30.0 kHz – 44.0 kHz",
-      imagePlaceholder: "Rice Leaf Folder Folded Blade",
-      imageAlt: "Folded rice leaf blade showing green tissue scraping"
+      imageSrc: `${import.meta.env.BASE_URL}rice%20leaf%20folder.jpg`,
+      imageAlt: "Rice Leaf Folder folded blade and scraping damage",
+      sourceName: "IRRI Rice Knowledge Bank",
+      sourceUrl: "http://www.knowledgebank.irri.org/"
     },
     {
       id: 4,
@@ -133,8 +144,10 @@ export const PestIntelligenceShowcase: React.FC = () => {
       damageDescription: "Attacks right when rice grains are filling with milk. They suck the grains dry, leaving behind empty chaff and brown spots that buyers reject or downgrade heavily.",
       acousticDefense: "High-power acoustic sound targets their sensitive antennas, driving rice bugs out of your field before they can touch young grain heads.",
       targetFrequency: "26.0 kHz – 40.0 kHz",
-      imagePlaceholder: "Rice Bug (Atangya) on Grain Panicle",
-      imageAlt: "Slender rice bug feeding on milky grain panicle"
+      imageSrc: `${import.meta.env.BASE_URL}rice%20bug.jpg`,
+      imageAlt: "Rice Bug (Leptocorisa oratorius) feeding on grain panicle",
+      sourceName: "IRRI Rice Knowledge Bank",
+      sourceUrl: "http://www.knowledgebank.irri.org/"
     },
     {
       id: 5,
@@ -153,8 +166,10 @@ export const PestIntelligenceShowcase: React.FC = () => {
       damageDescription: "Both adult spiny beetles and grubs scrape and tunnel into leaves simultaneously, drying them out and weakening the plant's ability to grow grains.",
       acousticDefense: "Acoustic resonance repels adult beetles from young rice tillers and reduces grub feeding activity across the crop canopy.",
       targetFrequency: "32.0 kHz – 45.0 kHz",
-      imagePlaceholder: "Rice Hispa Spiny Beetle on Leaf",
-      imageAlt: "Small spiny black beetle scraping leaf blade"
+      imageSrc: `${import.meta.env.BASE_URL}rice%20hispa.jpg`,
+      imageAlt: "Rice Hispa spiny black beetle on leaf blade",
+      sourceName: "IRRI Rice Knowledge Bank",
+      sourceUrl: "http://www.knowledgebank.irri.org/"
     }
   ];
 
@@ -318,33 +333,43 @@ export const PestIntelligenceShowcase: React.FC = () => {
                 </div>
               </div>
 
-              {/* Card Middle: Rich Hero Image Placeholder Frame */}
-              <div className="relative rounded-2xl overflow-hidden bg-forest-950 border border-forest-800 shadow-inner h-[160px] sm:h-[190px] flex flex-col items-center justify-center p-4 text-center group">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl bg-forest-900/90 border border-forest-700 flex items-center justify-center text-solar-400 mb-2 shadow-inner group-hover:scale-105 transition-transform duration-300">
-                  <Bug className="w-7 h-7 sm:w-8 sm:h-8" />
-                </div>
+              {/* Card Middle: Real Photo Showcase Frame */}
+              <div className="relative rounded-2xl overflow-hidden bg-forest-950 border border-forest-800 shadow-inner h-[170px] sm:h-[210px] flex items-center justify-center group">
+                <img 
+                  src={pest.imageSrc} 
+                  alt={pest.imageAlt}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-95 contrast-105"
+                  loading="lazy"
+                />
 
-                <h5 className="text-sm sm:text-base font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                  {pest.imagePlaceholder}
-                </h5>
-                <p className="text-xs text-solar-300 font-bold mt-0.5">
-                  {pest.localName}
-                </p>
+                {/* Subtle Gradient Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-t from-forest-950/90 via-transparent to-forest-950/40 pointer-events-none" />
 
                 {/* AI Vision Optical Tag */}
-                <div className="absolute top-2.5 left-2.5 bg-emerald-500 text-forest-950 text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                <div className="absolute top-2.5 left-2.5 bg-emerald-500 text-forest-950 text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md">
                   <Eye className="w-3.5 h-3.5" />
                   <span>YOLO Target #{pest.id}</span>
                 </div>
 
                 {/* Repelling Frequency Tag */}
-                <div className="absolute top-2.5 right-2.5 bg-forest-900/90 text-solar-300 border border-forest-700 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg shadow-sm">
+                <div className="absolute top-2.5 right-2.5 bg-forest-950/90 text-solar-300 border border-forest-700 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg shadow-md backdrop-blur-xs">
                   {pest.targetFrequency}
                 </div>
 
-                {/* Bottom Photo Caption */}
-                <div className="absolute bottom-2 inset-x-2 bg-forest-950/90 px-3 py-1 rounded-xl text-[10px] text-forest-200 border border-forest-800 truncate font-medium">
-                  📷 {pest.imageAlt}
+                {/* Bottom Source Citation & Photo Caption */}
+                <div className="absolute bottom-2 inset-x-2 bg-forest-950/95 px-3 py-1 rounded-xl text-[10px] text-forest-200 border border-forest-800 flex items-center justify-between gap-2 shadow-md backdrop-blur-xs">
+                  <span className="truncate font-medium">📷 {pest.imageAlt}</span>
+                  <a 
+                    href={pest.sourceUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1 text-solar-400 hover:text-solar-300 font-mono font-bold shrink-0 transition-colors cursor-pointer"
+                    title={`View official source at ${pest.sourceName}`}
+                  >
+                    <span>{pest.sourceName}</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
               </div>
 
