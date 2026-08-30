@@ -106,15 +106,6 @@ export const SettingsPage: React.FC = () => {
     setTimeout(() => setResetMessage(false), 3000);
   };
 
-  const protectedPests = [
-    { name: "Brown Planthopper", local: "Ngusong Kabayo", scientific: "Nilaparvata lugens", risk: "Critical Threat" },
-    { name: "Green Leafhopper", local: "Berdeng Ngusong Kabayo", scientific: "Nephotettix virescens", risk: "Tungro Vector" },
-    { name: "Rice Leaf Folder", local: "Maniniklop ng Dahon", scientific: "Cnaphalocrocis medinalis", risk: "Leaf Roller" },
-    { name: "Rice Bug (Harang)", local: "Atangya / Harang", scientific: "Leptocorisa oratorius", risk: "Milky Grain Feeder" },
-    { name: "Rice Stem Borer", local: "Ubod ng Palay", scientific: "Scirpophaga incertulas", risk: "Deadheart Borer" },
-    { name: "Rice Hispa", local: "Hispa ng Palay", scientific: "Dicladispa armigera", risk: "Leaf Scraper" },
-  ];
-
   return (
     <div className="space-y-5 animate-in fade-in duration-300 pb-6 max-w-5xl mx-auto">
       
@@ -147,36 +138,6 @@ export const SettingsPage: React.FC = () => {
             <span className={`w-2 h-2 rounded-full ${aiServerCheck.online ? 'bg-emerald-600 animate-pulse' : 'bg-solar-500'}`} />
             <span>{aiServerCheck.online ? 'AI Brain Online' : 'AI Standby'}</span>
           </span>
-        </div>
-      </div>
-
-      {/* 2. Protected Rice Pests Section */}
-      <div className="bg-white/95 p-5 sm:p-6 rounded-3xl border border-app-border shadow-xs space-y-3.5">
-        <div className="flex items-center space-x-2">
-          <ShieldCheck className="w-5 h-5 text-emerald-700" />
-          <h3 className="text-base sm:text-lg font-black text-forest-950">Active Defense Target Species</h3>
-        </div>
-        <p className="text-xs text-forest-900 font-medium">
-          EcoEcho's camera and sound shield automatically recognize and repel these 6 key rice pests:
-        </p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
-          {protectedPests.map((pest, idx) => (
-            <div key={idx} className="p-3 bg-forest-50/90 border border-forest-200 rounded-2xl flex items-center justify-between gap-2">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-forest-200 text-forest-950 flex items-center justify-center font-black">
-                  <Bug className="w-4 h-4 text-forest-950" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-forest-950">{pest.name}</h4>
-                  <p className="text-[10px] text-amber-900 font-black">{pest.local}</p>
-                </div>
-              </div>
-              <span className="bg-emerald-100 text-emerald-950 text-[10px] font-black px-2 py-0.5 rounded-md shrink-0 border border-emerald-300">
-                Guarded
-              </span>
-            </div>
-          ))}
         </div>
       </div>
 
