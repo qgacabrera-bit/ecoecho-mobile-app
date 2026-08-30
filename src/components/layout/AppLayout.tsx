@@ -133,8 +133,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         {children}
       </main>
 
-      {/* Clean, Uniform Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-forest-950/98 border-t border-forest-800/90 backdrop-blur-xl px-2 py-2 shadow-2xl safe-area-bottom">
+      {/* 100% Opaque, High-Contrast Mobile Bottom Navigation Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-forest-950 border-t border-forest-800 px-3 py-2 shadow-[0_-8px_30px_rgba(0,0,0,0.6)] safe-area-bottom">
         <div className="max-w-md mx-auto flex items-center justify-between">
           {mobileNavItems.map((item) => {
             const Icon = item.icon;
@@ -148,32 +148,32 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 className={`flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all cursor-pointer select-none ${
                   isActive 
                     ? 'text-solar-400' 
-                    : 'text-forest-400/80 hover:text-forest-200'
+                    : 'text-forest-200 hover:text-white'
                 }`}
               >
                 {/* Icon Container */}
                 <div className={`flex items-center justify-center rounded-xl transition-all ${
                   isCenter
                     ? isActive 
-                      ? 'w-10 h-10 bg-solar-500 text-forest-950 shadow-md shadow-solar-500/20' 
-                      : 'w-10 h-10 bg-forest-900 text-forest-200 border border-forest-800'
+                      ? 'w-11 h-11 bg-solar-500 text-forest-950 shadow-lg shadow-solar-500/30 ring-2 ring-solar-400/50' 
+                      : 'w-11 h-11 bg-forest-900 text-white border border-forest-700 shadow-md'
                     : 'w-8 h-8'
                 }`}>
                   <Icon className={`${isCenter ? 'w-5 h-5' : 'w-5 h-5'} ${
-                    !isCenter && isActive ? 'text-solar-400' : ''
+                    !isCenter ? (isActive ? 'text-solar-400' : 'text-forest-200') : ''
                   }`} />
                 </div>
 
-                {/* Label */}
-                <span className={`text-[10px] font-bold mt-1 tracking-tight truncate max-w-[60px] ${
-                  isActive ? 'text-solar-400' : 'text-forest-400/80'
+                {/* High-Contrast Crisp Label */}
+                <span className={`text-[11px] font-black mt-1 tracking-tight truncate max-w-[64px] ${
+                  isActive ? 'text-solar-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]' : 'text-forest-200'
                 }`}>
                   {item.label}
                 </span>
 
                 {/* Subtle Active Indicator Dot for non-center items */}
                 {!isCenter && isActive && (
-                  <span className="w-1 h-1 rounded-full bg-solar-400 mt-0.5" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-solar-400 mt-0.5 shadow-sm shadow-solar-400" />
                 )}
               </button>
             );
