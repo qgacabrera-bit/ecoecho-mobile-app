@@ -32,7 +32,7 @@ export const PWAInstallBanner: React.FC = () => {
       {!isInstalled && !dismissed && pwaInstallPrompt && (
         <div className="bg-gradient-to-r from-forest-900 via-forest-800 to-forest-900 border border-forest-700/60 text-white p-3.5 rounded-2xl shadow-lg flex items-center justify-between relative overflow-hidden">
           <div className="flex items-center space-x-3 z-10">
-            <div className="w-10 h-10 rounded-xl bg-forest-700/60 border border-forest-500/40 flex items-center justify-center text-solar-400 shrink-0 shadow-inner overflow-hidden p-1">
+            <div className="w-10 h-10 rounded-xl bg-white border border-white/80 flex items-center justify-center shrink-0 shadow-md overflow-hidden p-1">
               <img 
                 src={`${import.meta.env.BASE_URL}EcoLogo-removebg.png`} 
                 alt="EcoEcho App Icon" 

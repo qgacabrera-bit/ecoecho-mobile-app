@@ -57,11 +57,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               onClick={() => setActiveTab('dashboard')}
               className="flex items-center space-x-3 cursor-pointer select-none group"
             >
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-forest-700 to-forest-900 border border-forest-600/50 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform overflow-hidden p-1">
+              <div className="w-10 h-10 rounded-2xl bg-white border border-white/80 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform overflow-hidden p-1">
                 <img 
                   src={`${import.meta.env.BASE_URL}EcoLogo-removebg.png`} 
                   alt="EcoEcho Logo" 
-                  className="w-full h-full object-contain filter drop-shadow"
+                  className="w-full h-full object-contain"
                 />
               </div>
               <div>
