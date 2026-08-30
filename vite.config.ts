@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'EcoLogo-removebg.png', 'rice_field_bg.jpg'],
       manifest: {
         name: 'EcoEcho - Acoustic Pest Deterrent & Field Monitor',
         short_name: 'EcoEcho',
@@ -20,6 +20,12 @@ export default defineConfig({
         start_url: './',
         scope: './',
         icons: [
+          {
+            src: 'EcoLogo-removebg.png',
+            sizes: '192x192 512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
           {
             src: 'favicon.svg',
             sizes: '192x192 512x512',
