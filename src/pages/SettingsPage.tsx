@@ -14,7 +14,8 @@ import {
   ChevronDown,
   ChevronUp,
   Radio,
-  Volume2
+  Volume2,
+  Cloud
 } from 'lucide-react';
 import { AcousticWaveformVisualizer } from '../components/layout/AcousticWaveformVisualizer';
 import { checkAIServerStatus, updateAIServerConfig } from '../services/api';
@@ -23,6 +24,7 @@ import { DeviceConfig } from '../types';
 export const SettingsPage: React.FC = () => {
   const { 
     config, 
+    telemetry,
     updateConfig, 
     isTestingSweep, 
     triggerTestSweep, 
@@ -35,6 +37,8 @@ export const SettingsPage: React.FC = () => {
   const [formConfig, setFormConfig] = useState<DeviceConfig>({
     esp32Ip: config.esp32Ip,
     wsUrl: config.wsUrl,
+    mqttBrokerUrl: config.mqttBrokerUrl || 'wss://broker.hivemq.com:8884/mqtt',
+    deviceId: config.deviceId || 'ECOECHO-01',
     aiApiEndpoint: config.aiApiEndpoint,
     aiServerUrl: config.aiServerUrl || 'http://127.0.0.1:5000',
     cameraSource: 'ESP32',
@@ -88,6 +92,8 @@ export const SettingsPage: React.FC = () => {
     const defaults: DeviceConfig = {
       esp32Ip: '192.168.100.135',
       wsUrl: 'ws://192.168.100.135:81',
+      mqttBrokerUrl: 'wss://broker.hivemq.com:8884/mqtt',
+      deviceId: 'ECOECHO-01',
       aiApiEndpoint: 'http://127.0.0.1:5000/api/detect',
       aiServerUrl: 'http://127.0.0.1:5000',
       cameraSource: 'ESP32',
@@ -225,16 +231,68 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Cloud MQTT Device Pairing Section */}
+        <div className="bg-forest-50/80 border border-forest-200 rounded-2xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Cloud className="w-4 h-4 text-forest-700" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-forest-900">
+                Cloud MQTT Device Pairing
+              </h4>
+            </div>
+            <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
+              telemetry.mqttConnected 
+                ? 'bg-emerald-100 text-emerald-950 border-emerald-300' 
+                : 'bg-amber-100 text-amber-950 border-amber-300'
+            }`}>
+              {telemetry.mqttConnected ? '🟢 Cloud MQTT Online' : '⚪ Cloud Ready'}
+            </span>
+          </div>
+          <p className="text-xs text-forest-600">
+            Connects your ESP32-CAM to the live website from anywhere over secure WebSockets (WSS).
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div>
+              <label className="block text-[11px] font-bold text-forest-900 mb-1">
+                Device Serial Number / ID
+              </label>
+              <input
+                type="text"
+                required
+                value={formConfig.deviceId}
+                onChange={(e) => setFormConfig({ ...formConfig, deviceId: e.target.value })}
+                placeholder="e.g. ECOECHO-01"
+                className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono font-bold text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-forest-900 mb-1">
+                Cloud MQTT Broker URL
+              </label>
+              <input
+                type="text"
+                required
+                value={formConfig.mqttBrokerUrl}
+                onChange={(e) => setFormConfig({ ...formConfig, mqttBrokerUrl: e.target.value })}
+                placeholder="wss://broker.hivemq.com:8884/mqtt"
+                className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Collapsible Advanced Network Settings */}
-        <div className="border-t border-forest-100 pt-3">
+        <div className="border border-forest-100 rounded-2xl p-4 bg-forest-50/40">
           <button
             type="button"
             onClick={() => setShowAdvancedNetwork(!showAdvancedNetwork)}
-            className="w-full flex items-center justify-between text-xs font-bold text-forest-700 hover:text-forest-950 py-2 transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between text-xs font-bold text-forest-900 cursor-pointer"
           >
-            <span className="flex items-center gap-2">
+            <span className="flex items-center space-x-2">
               <Wifi className="w-4 h-4" />
-              <span>Advanced Hardware & Network Configuration</span>
+              <span>Advanced Direct IP & AI Server Configuration</span>
             </span>
             {showAdvancedNetwork ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>

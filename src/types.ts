@@ -31,6 +31,8 @@ export interface DeviceTelemetry {
   webcamIndex?: number;
   cameraConnected?: boolean;
   webcamConnected?: boolean;
+  mqttConnected?: boolean;
+  latestCameraFrame?: string;
 }
 
 export interface BoundingBox {
@@ -92,6 +94,8 @@ export interface SupportTicket {
 export interface DeviceConfig {
   esp32Ip: string;
   wsUrl: string;
+  mqttBrokerUrl: string; // e.g. 'wss://broker.hivemq.com:8884/mqtt'
+  deviceId: string; // e.g. 'ECOECHO-01'
   aiApiEndpoint: string;
   aiServerUrl: string;
   cameraSource: CameraSource;

@@ -16,6 +16,8 @@ export const getDefaultConfig = (): DeviceConfig => {
       const parsed = JSON.parse(saved);
       return {
         ...parsed,
+        mqttBrokerUrl: parsed.mqttBrokerUrl || 'wss://broker.hivemq.com:8884/mqtt',
+        deviceId: parsed.deviceId || 'ECOECHO-01',
         cameraSource: parsed.cameraSource || 'WEBCAM',
         webcamIndex: parsed.webcamIndex ?? 0
       };
@@ -26,6 +28,8 @@ export const getDefaultConfig = (): DeviceConfig => {
   return {
     esp32Ip: '192.168.100.135',
     wsUrl: 'ws://192.168.100.135:81',
+    mqttBrokerUrl: 'wss://broker.hivemq.com:8884/mqtt',
+    deviceId: 'ECOECHO-01',
     aiApiEndpoint: 'http://127.0.0.1:5000/api/detect',
     aiServerUrl: 'http://127.0.0.1:5000',
     cameraSource: 'WEBCAM',

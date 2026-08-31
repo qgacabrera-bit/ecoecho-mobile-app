@@ -26,15 +26,15 @@ export const LiveCameraFeed: React.FC = () => {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Direct local ESP32 stream or AI server annotated stream
   const isDirectEsp32 = !config.aiServerUrl || config.cameraSource === 'ESP32';
   const esp32DirectStreamUrl = `http://${config.esp32Ip}:81/stream`;
-  const esp32SnapshotUrl = `http://${config.esp32Ip}/capture?t=`;
   const [streamSourceType, setStreamSourceType] = useState<'DIRECT' | 'AI'>('DIRECT');
 
-  const currentStreamUrl = streamSourceType === 'AI' && config.aiServerUrl
-    ? `${config.aiServerUrl}/api/annotated-stream`
-    : esp32DirectStreamUrl;
+  const currentStreamUrl = telemetry.latestCameraFrame 
+    ? telemetry.latestCameraFrame
+    : (streamSourceType === 'AI' && config.aiServerUrl
+        ? `${config.aiServerUrl}/api/annotated-stream`
+        : esp32DirectStreamUrl);
 
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
@@ -67,8 +67,14 @@ export const LiveCameraFeed: React.FC = () => {
           <div className="flex items-center space-x-1.5 bg-emerald-950 text-emerald-400 border border-emerald-800 px-3 py-1 rounded-full text-xs font-bold">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="flex items-center gap-1">
-              <Wifi className="w-3 h-3 text-emerald-400" />
-              ESP32 Field Camera
+              {telemetry.latestCameraFrame ? (
+                <span>☁️ MQTT Cloud Stream ({config.deviceId})</span>
+              ) : (
+                <>
+                  <Wifi className="w-3 h-3 text-emerald-400" />
+                  <span>ESP32 Field Camera</span>
+                </>
+              )}
             </span>
           </div>
 

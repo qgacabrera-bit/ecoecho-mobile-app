@@ -15,6 +15,7 @@ import {
   generateLiveSimulationEvent,
   triggerFrequencyTest as apiTriggerTest
 } from '../services/api';
+import mqtt, { MqttClient } from 'mqtt';
 import { playAudibleSweepSimulation } from '../services/audioSimulator';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -188,6 +189,81 @@ export const DeviceProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     intervalId = setInterval(poll, 1200);
     return () => clearInterval(intervalId);
   }, [config, isTestingSweep, activeTestFrequency, mode, pushLiveDetections]);
+
+  // Real-time Cloud MQTT Client (HiveMQ / EMQX WSS)
+  useEffect(() => {
+    if (!config.mqttBrokerUrl || !config.deviceId) return;
+
+    let client: MqttClient | null = null;
+    try {
+      client = mqtt.connect(config.mqttBrokerUrl, {
+        clientId: `ecoecho_web_${Math.random().toString(16).substring(2, 9)}`,
+        clean: true,
+        connectTimeout: 5000,
+        reconnectPeriod: 4000
+      });
+
+      client.on('connect', () => {
+        setTelemetry(prev => ({ ...prev, mqttConnected: true }));
+        const topicFilter = `ecoecho/${config.deviceId}/#`;
+        client?.subscribe(topicFilter, (err) => {
+          if (!err) {
+            console.log(`[EcoEcho MQTT] Subscribed to ${topicFilter}`);
+          }
+        });
+      });
+
+      client.on('message', (topic, payload) => {
+        try {
+          const str = payload.toString();
+          if (topic.endsWith('/camera')) {
+            const frameSrc = str.startsWith('data:image') ? str : `data:image/jpeg;base64,${str}`;
+            setTelemetry(prev => ({ 
+              ...prev, 
+              latestCameraFrame: frameSrc, 
+              cameraConnected: true,
+              connectionStatus: 'ONLINE' 
+            }));
+          } else if (topic.endsWith('/status')) {
+            const data = JSON.parse(str);
+            setTelemetry(prev => ({
+              ...prev,
+              batteryLevel: data.battery ?? prev.batteryLevel,
+              solarVoltage: data.solar ?? prev.solarVoltage,
+              currentFrequencyKhz: data.freq ?? prev.currentFrequencyKhz,
+              connectionStatus: 'ONLINE',
+              lastPingTimestamp: Date.now()
+            }));
+          } else if (topic.endsWith('/detections')) {
+            const data = JSON.parse(str);
+            if (Array.isArray(data)) {
+              pushLiveDetections(data);
+            }
+          }
+        } catch {
+          // Ignore parse errors on raw binary/truncated messages
+        }
+      });
+
+      client.on('offline', () => {
+        setTelemetry(prev => ({ ...prev, mqttConnected: false }));
+      });
+
+      client.on('error', () => {
+        setTelemetry(prev => ({ ...prev, mqttConnected: false }));
+      });
+    } catch {
+      // MQTT init fallback
+    }
+
+    return () => {
+      if (client) {
+        try {
+          client.end(true);
+        } catch {}
+      }
+    };
+  }, [config.mqttBrokerUrl, config.deviceId, pushLiveDetections]);
 
   // Toggle Device Mode
   const setMode = async (newMode: DeviceMode) => {
