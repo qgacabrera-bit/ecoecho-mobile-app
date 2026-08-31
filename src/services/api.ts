@@ -30,8 +30,8 @@ export const getDefaultConfig = (): DeviceConfig => {
     wsUrl: 'ws://192.168.100.135:81',
     mqttBrokerUrl: 'wss://broker.hivemq.com:8884/mqtt',
     deviceId: 'ECOECHO-01',
-    aiApiEndpoint: 'http://127.0.0.1:5000/api/detect',
-    aiServerUrl: 'http://127.0.0.1:5000',
+    aiApiEndpoint: 'https://ecoecho-backend-1a6d.onrender.com/api/detect',
+    aiServerUrl: 'https://ecoecho-backend-1a6d.onrender.com',
     cameraSource: 'WEBCAM',
     webcamIndex: 0,
     useSimulatedHardware: true,
@@ -51,7 +51,7 @@ export const saveDeviceConfig = (config: DeviceConfig): void => {
 /**
  * Check if the Python AI Server (running best.pt) is online
  */
-export async function checkAIServerStatus(aiServerUrl: string = 'http://127.0.0.1:5000'): Promise<{
+export async function checkAIServerStatus(aiServerUrl: string = 'https://ecoecho-backend-1a6d.onrender.com'): Promise<{
   online: boolean;
   modelName: string;
   fps: number;

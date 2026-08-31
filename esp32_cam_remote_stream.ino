@@ -15,8 +15,8 @@
 const char* ssid = "YOUR_WIFI_OR_HOTSPOT_NAME";
 const char* password = "YOUR_WIFI_PASSWORD";
 
-// Replace with your active Ngrok URL (e.g. from running 'python start_tunnel.py'):
-const char* serverUrl = "https://six-pandas-wish.loca.lt/api/detect";
+// Permanent Render AI Server URL:
+const char* serverUrl = "https://ecoecho-backend-1a6d.onrender.com/api/detect";
 
 // Capture interval in milliseconds (e.g., 500ms = 2 FPS)
 const unsigned long captureIntervalMs = 500;
