@@ -26,15 +26,13 @@ export const LiveCameraFeed: React.FC = () => {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const isDirectEsp32 = !config.aiServerUrl || config.cameraSource === 'ESP32';
   const esp32DirectStreamUrl = `http://${config.esp32Ip}:81/stream`;
-  const [streamSourceType, setStreamSourceType] = useState<'DIRECT' | 'AI'>('DIRECT');
+  const aiAnnotatedStreamUrl = `${config.aiServerUrl}/api/annotated-stream`;
 
+  // Use Cloud Render stream if AI server configured, otherwise direct ESP32 or MQTT
   const currentStreamUrl = telemetry.latestCameraFrame 
     ? telemetry.latestCameraFrame
-    : (streamSourceType === 'AI' && config.aiServerUrl
-        ? `${config.aiServerUrl}/api/annotated-stream`
-        : esp32DirectStreamUrl);
+    : (config.aiServerUrl ? aiAnnotatedStreamUrl : esp32DirectStreamUrl);
 
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
