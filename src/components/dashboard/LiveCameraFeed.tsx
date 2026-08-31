@@ -26,8 +26,15 @@ export const LiveCameraFeed: React.FC = () => {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Dedicated AI-annotated live stream URL from ESP32 camera
-  const aiAnnotatedStreamUrl = `${config.aiServerUrl}/api/annotated-stream`;
+  // Direct local ESP32 stream or AI server annotated stream
+  const isDirectEsp32 = !config.aiServerUrl || config.cameraSource === 'ESP32';
+  const esp32DirectStreamUrl = `http://${config.esp32Ip}:81/stream`;
+  const esp32SnapshotUrl = `http://${config.esp32Ip}/capture?t=`;
+  const [streamSourceType, setStreamSourceType] = useState<'DIRECT' | 'AI'>('DIRECT');
+
+  const currentStreamUrl = streamSourceType === 'AI' && config.aiServerUrl
+    ? `${config.aiServerUrl}/api/annotated-stream`
+    : esp32DirectStreamUrl;
 
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
@@ -105,10 +112,10 @@ export const LiveCameraFeed: React.FC = () => {
       <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] max-h-[480px] bg-forest-950 flex items-center justify-center overflow-hidden">
         
         {!streamError ? (
-          /* Live Stream from ESP32 via AI Server */
+          /* Live Stream from ESP32 */
           <div className="w-full h-full relative flex items-center justify-center">
             <img
-              src={aiAnnotatedStreamUrl}
+              src={currentStreamUrl}
               alt="ESP32 Live Field Camera"
               className="w-full h-full object-cover select-none"
               onError={() => setStreamError(true)}
@@ -116,20 +123,30 @@ export const LiveCameraFeed: React.FC = () => {
             <AIDetectionOverlay detections={detections} />
           </div>
         ) : (
-          /* Offline Fallback */
+          /* Offline / Local IP Guidance Fallback */
           <div className="absolute inset-0 bg-forest-950/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-30 space-y-3">
             <ShieldAlert className="w-10 h-10 text-solar-400" />
-            <h4 className="text-base font-black text-white">ESP32 Camera Stream Offline</h4>
+            <h4 className="text-base font-black text-white">ESP32 Camera Not Reached</h4>
             <p className="text-xs text-forest-200 max-w-sm">
-              Waiting for frames from the ESP32 field station. Please ensure your ESP32-CAM is powered and streaming.
+              Connecting to <code className="bg-forest-900 px-1.5 py-0.5 rounded text-solar-400 font-mono">http://{config.esp32Ip}</code>. Ensure your phone/device is on the same local Wi-Fi or ESP32 Hotspot.
             </p>
-            <button
-              onClick={() => setStreamError(false)}
-              className="bg-forest-800 hover:bg-forest-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Reconnect Stream</span>
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+              <button
+                onClick={() => setStreamError(false)}
+                className="bg-forest-800 hover:bg-forest-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Retry Connection</span>
+              </button>
+              <a
+                href={`http://${config.esp32Ip}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-solar-500 hover:bg-solar-400 text-forest-950 text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              >
+                <span>Test ESP32 Direct Link</span>
+              </a>
+            </div>
           </div>
         )}
 
