@@ -292,9 +292,80 @@ def camera_worker():
         time.sleep(0.04 if source == "webcam" else 0.1)
 
 
+def start_mqtt_client():
+    """Subscribes to Cloud MQTT broker to ingest ESP32 frames in real-time"""
+    try:
+        import paho.mqtt.client as mqtt_client
+    except ImportError:
+        print("[EcoEcho AI Server] paho-mqtt not installed; skipping background MQTT listener.")
+        return
+
+    mqtt_broker = os.environ.get("MQTT_BROKER", "broker.hivemq.com")
+    mqtt_port = int(os.environ.get("MQTT_PORT", 1883))
+
+    def on_connect(client, userdata, flags, rc):
+        if rc == 0:
+            print(f"[EcoEcho AI Server] ☁️ Connected to Cloud MQTT Broker ({mqtt_broker}:{mqtt_port})")
+            client.subscribe("ecoecho/+/camera")
+            print("[EcoEcho AI Server] 📡 Subscribed to 'ecoecho/+/camera' for live pest vision")
+        else:
+            print(f"[EcoEcho AI Server] ⚠️ MQTT connection failed with code {rc}")
+
+    def on_message(client, userdata, msg):
+        try:
+            topic = msg.topic
+            payload = msg.payload
+            
+            parts = topic.split("/")
+            device_id = parts[1] if len(parts) > 1 else "ECOECHO-01"
+
+            img = None
+            try:
+                text = payload.decode("utf-8")
+                if text.startswith("data:image"):
+                    text = text.split(",", 1)[1]
+                img_bytes = base64.b64decode(text)
+                nparr = np.frombuffer(img_bytes, np.uint8)
+                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            except Exception:
+                pass
+
+            if img is None:
+                nparr = np.frombuffer(payload, np.uint8)
+                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+            if img is not None:
+                annotated, detections = process_frame(img)
+                state["last_frame"] = img
+                state["last_annotated_frame"] = annotated
+                state["last_push_frame_time"] = time.time()
+                state["camera_source"] = "esp32"
+                state["camera_connected"] = True
+
+                if detections:
+                    det_topic = f"ecoecho/{device_id}/detections"
+                    client.publish(det_topic, json.dumps(detections))
+        except Exception:
+            pass
+
+    client = mqtt_client.Client(client_id=f"ecoecho_ai_server_{int(time.time())}")
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    try:
+        client.connect(mqtt_broker, mqtt_port, 60)
+        client.loop_start()
+    except Exception as e:
+        print(f"[EcoEcho AI Server] ⚠️ MQTT connect error: {e}")
+
+
 # Start background inference thread
 worker_thread = threading.Thread(target=camera_worker, daemon=True)
 worker_thread.start()
+
+# Start background MQTT ingestion client
+mqtt_thread = threading.Thread(target=start_mqtt_client, daemon=True)
+mqtt_thread.start()
 
 
 @app.route("/")
