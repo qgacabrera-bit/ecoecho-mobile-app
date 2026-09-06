@@ -106,7 +106,8 @@ static esp_err_t stream_handler(httpd_req_t *req) {
       esp_camera_fb_return(fb);
       fb = NULL;
       _jpg_buf = NULL;
-    } else if (res != ESP_OK) {
+    }
+    if (res != ESP_OK) {
       break;
     }
   }
@@ -145,6 +146,7 @@ static esp_err_t status_handler(httpd_req_t *req) {
 void startCameraServer() {
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
   config.server_port = 80;
+  config.lru_purge_enable = true;
 
   httpd_uri_t capture_uri = {
     .uri       = "/capture",
@@ -175,6 +177,7 @@ void startCameraServer() {
 
   config.server_port = 81;
   config.ctrl_port = 32769;
+  config.lru_purge_enable = true;
   if (httpd_start(&stream_httpd, &config) == ESP_OK) {
     httpd_register_uri_handler(stream_httpd, &stream_uri);
   }

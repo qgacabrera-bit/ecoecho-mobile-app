@@ -26,6 +26,7 @@ export const LiveCameraFeed: React.FC = () => {
   const [streamError, setStreamError] = useState<boolean>(false);
   const [isSnapshotCaptured, setIsSnapshotCaptured] = useState<boolean>(false);
   const [streamAttempt, setStreamAttempt] = useState<number>(0);
+  const [streamSrc, setStreamSrc] = useState<string>('');
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
@@ -34,21 +35,50 @@ export const LiveCameraFeed: React.FC = () => {
   const esp32DirectStreamUrl = `http://${cleanIp}:81/stream`;
   const esp32Port80StreamUrl = `http://${cleanIp}/stream`;
 
-  const currentStreamUrl = telemetry.latestCameraFrame 
-    ? telemetry.latestCameraFrame 
-    : `${esp32DirectStreamUrl}${streamAttempt > 0 ? `?attempt=${streamAttempt}` : ''}`;
-
-  // If camera stream doesn't load within 8s on initial load, show friendly troubleshooting
+  // Explicitly close socket when user refreshes or closes tab so ESP32 frees up stream socket immediately
   useEffect(() => {
+    const handleUnload = () => {
+      if (imgRef.current) {
+        imgRef.current.src = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      if (imgRef.current) {
+        imgRef.current.src = '';
+      }
+    };
+  }, []);
+
+  // Delay mounting stream slightly on refresh/mount so ESP32 has 400ms to drop any previous dead socket
+  useEffect(() => {
+    setStreamError(false);
+    const timer = setTimeout(() => {
+      if (telemetry.latestCameraFrame) {
+        setStreamSrc(telemetry.latestCameraFrame);
+      } else {
+        setStreamSrc(`${esp32DirectStreamUrl}?t=${Date.now()}`);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [cleanIp, telemetry.latestCameraFrame, streamAttempt]);
+
+  // Safety timer: Only triggers if after 12s no video dimensions (naturalWidth) exist at all
+  useEffect(() => {
+    if (!streamSrc) return;
+
     const timeout = setTimeout(() => {
       const img = imgRef.current;
-      if (img && !img.complete && !telemetry.latestCameraFrame) {
+      // Do NOT check img.complete because MJPEG streams never complete. Check naturalWidth:
+      if (img && img.naturalWidth === 0 && !telemetry.latestCameraFrame) {
         setStreamError(true);
       }
-    }, 8000);
+    }, 12000);
 
     return () => clearTimeout(timeout);
-  }, [streamAttempt, telemetry.latestCameraFrame]);
+  }, [streamSrc, telemetry.latestCameraFrame]);
 
   // Real-time Background Frame Extractor -> AI Detection (Seamless & Silent)
   useEffect(() => {
@@ -61,6 +91,9 @@ export const LiveCameraFeed: React.FC = () => {
 
       // Only process when the image element has active frame dimensions
       if (!img.naturalWidth || !img.naturalHeight) return;
+
+      // Stream is actively flowing frames, make sure error state is false
+      setStreamError(false);
 
       try {
         const canvas = document.createElement('canvas');
@@ -127,6 +160,7 @@ export const LiveCameraFeed: React.FC = () => {
 
   const handleRetryStream = () => {
     setStreamError(false);
+    setStreamSrc('');
     setStreamAttempt(prev => prev + 1);
   };
 
@@ -182,23 +216,28 @@ export const LiveCameraFeed: React.FC = () => {
         {!streamError ? (
           /* Live Stream from ESP32 */
           <div className="w-full h-full relative flex items-center justify-center">
-            <img
-              ref={imgRef}
-              crossOrigin="anonymous"
-              src={currentStreamUrl}
-              alt="ESP32 Live Field Camera"
-              className="w-full h-full object-cover select-none"
-              onLoad={() => setStreamError(false)}
-              onError={() => {
-                // If direct port 81 failed, try port 80 stream before giving up
-                if (currentStreamUrl.includes(':81/stream')) {
-                  const img = imgRef.current;
-                  if (img) img.src = esp32Port80StreamUrl;
-                } else {
-                  setStreamError(true);
-                }
-              }}
-            />
+            {streamSrc ? (
+              <img
+                ref={imgRef}
+                crossOrigin="anonymous"
+                src={streamSrc}
+                alt="ESP32 Live Field Camera"
+                className="w-full h-full object-cover select-none"
+                onLoad={() => setStreamError(false)}
+                onError={() => {
+                  // If direct port 81 failed, try port 80 stream before giving up
+                  if (streamSrc.includes(':81/stream')) {
+                    setStreamSrc(`${esp32Port80StreamUrl}?t=${Date.now()}`);
+                  } else {
+                    setStreamError(true);
+                  }
+                }}
+              />
+            ) : (
+              <div className="flex items-center justify-center text-xs text-forest-400 font-mono">
+                Connecting to field camera...
+              </div>
+            )}
             <AIDetectionOverlay detections={detections} />
           </div>
         ) : (
