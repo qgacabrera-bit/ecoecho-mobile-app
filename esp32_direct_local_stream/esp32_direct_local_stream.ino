@@ -19,15 +19,15 @@
 // =================== Wi-Fi Configuration ===================
 // Set to true to create a standalone Hotspot ("EcoEcho-Field-AP") with IP 192.168.4.1
 // Set to false to connect to your home Wi-Fi or mobile phone hotspot
-const bool USE_ACCESS_POINT_MODE = true; 
+const bool USE_ACCESS_POINT_MODE = false; 
 
 // If USE_ACCESS_POINT_MODE is true (AP Mode):
 const char* ap_ssid = "EcoEcho-Field-AP";
 const char* ap_password = "ecoecho123";
 
 // If USE_ACCESS_POINT_MODE is false (Connecting to your Wi-Fi / Hotspot):
-const char* ssid = "YOUR_WIFI_OR_HOTSPOT_NAME";
-const char* password = "YOUR_WIFI_PASSWORD";
+const char* ssid = "GlobeAtHome_d64b8";
+const char* password = "zw5QXxYK";
 
 // =================== AI-Thinker Camera Pins ===================
 #define PWDN_GPIO_NUM     32

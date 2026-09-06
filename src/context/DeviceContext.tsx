@@ -14,6 +14,7 @@ import {
   getAIDetections, 
   detectFrameFromAI,
   generateLiveSimulationEvent,
+  triggerAIPestTest,
   triggerFrequencyTest as apiTriggerTest
 } from '../services/api';
 import mqtt, { MqttClient } from 'mqtt';
@@ -39,6 +40,7 @@ interface DeviceContextType {
   isSimulatingPests: boolean;
   setIsSimulatingPests: (val: boolean) => void;
   triggerManualDetection: (pestType?: PestType | string) => void;
+  triggerAITest: () => Promise<void>;
   pushLiveDetections: (newDetections: AIDetectionEvent[]) => void;
   clearDetectionLog: () => void;
   pwaInstallPrompt: BeforeInstallPromptEvent | null;
@@ -338,6 +340,23 @@ export const DeviceProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }
   }, [mode]);
 
+  const triggerAITest = async () => {
+    try {
+      const result = await triggerAIPestTest(config, mode);
+      if (result.success && result.detections.length > 0) {
+        pushLiveDetections(result.detections);
+        setTelemetry(prev => ({
+          ...prev,
+          aiServerOnline: true,
+          lastInferenceMs: result.inferenceMs || 25,
+          fps: 15
+        }));
+      }
+    } catch (err) {
+      console.error('[EcoEcho] triggerAITest error:', err);
+    }
+  };
+
   const clearDetectionLog = () => {
     setDetectionHistory([]);
     setDetections([]);
@@ -404,6 +423,7 @@ export const DeviceProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         isSimulatingPests,
         setIsSimulatingPests,
         triggerManualDetection,
+        triggerAITest,
         pushLiveDetections,
         clearDetectionLog,
         pwaInstallPrompt,

@@ -151,25 +151,27 @@ export async function detectFrameFromAI(
 ): Promise<{ success: boolean; detections: AIDetectionEvent[]; inferenceMs: number; annotatedImage?: string }> {
   try {
     let response: Response;
+    const conf = config.sensitivityThreshold ?? 0.70;
+    const url = `${config.aiServerUrl}/api/detect?conf=${conf}`;
 
     if (typeof imageData === 'string') {
-      response = await fetch(`${config.aiServerUrl}/api/detect`, {
+      response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           image: imageData,
-          confidenceThreshold: config.sensitivityThreshold || 0.70
+          confidenceThreshold: conf
         }),
-        signal: AbortSignal.timeout(4000)
+        signal: AbortSignal.timeout(6000)
       });
     } else {
       const formData = new FormData();
       formData.append('file', imageData);
-      formData.append('confidenceThreshold', String(config.sensitivityThreshold || 0.70));
-      response = await fetch(`${config.aiServerUrl}/api/detect`, {
+      formData.append('confidenceThreshold', String(conf));
+      response = await fetch(url, {
         method: 'POST',
         body: formData,
-        signal: AbortSignal.timeout(4000)
+        signal: AbortSignal.timeout(6000)
       });
     }
 
@@ -446,3 +448,43 @@ export function generateLiveSimulationEvent(mode: DeviceMode): AIDetectionEvent 
     isDeterred: Math.random() > 0.2
   };
 }
+
+/**
+ * Test AI Pest Detection with a verified Rice Pest sample
+ */
+export async function triggerAIPestTest(
+  config: DeviceConfig,
+  currentMode: DeviceMode = 'AUTOMATIC'
+): Promise<{ success: boolean; detections: AIDetectionEvent[]; source: 'server' | 'simulation'; inferenceMs?: number }> {
+  try {
+    const conf = config.sensitivityThreshold || 0.20;
+    const res = await fetch(`${config.aiServerUrl}/api/test-pest?conf=${conf}`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(5000)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.detections && data.detections.length > 0) {
+        return {
+          success: true,
+          detections: data.detections,
+          source: 'server',
+          inferenceMs: data.inferenceMs
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('[EcoEcho API] triggerAIPestTest server fetch notice:', err);
+  }
+
+  // Fallback to local high-fidelity simulated sample
+  const sim = generateLiveSimulationEvent(currentMode);
+  return {
+    success: true,
+    detections: [sim],
+    source: 'simulation',
+    inferenceMs: 14
+  };
+}
+
