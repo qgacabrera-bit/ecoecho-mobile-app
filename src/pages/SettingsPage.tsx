@@ -35,8 +35,8 @@ export const SettingsPage: React.FC = () => {
   } = useDevice();
 
   const [formConfig, setFormConfig] = useState<DeviceConfig>({
-    esp32Ip: config.esp32Ip,
-    wsUrl: config.wsUrl,
+    esp32Ip: config.esp32Ip || '192.168.100.135',
+    wsUrl: config.wsUrl || 'ws://192.168.100.135:81',
     mqttBrokerUrl: config.mqttBrokerUrl || 'wss://broker.hivemq.com:8884/mqtt',
     deviceId: config.deviceId || 'ECOECHO-01',
     aiApiEndpoint: config.aiApiEndpoint || 'https://ecoecho-backend-1a6d.onrender.com/api/detect',
@@ -54,7 +54,7 @@ export const SettingsPage: React.FC = () => {
 
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [resetMessage, setResetMessage] = useState<boolean>(false);
-  const [showAdvancedNetwork, setShowAdvancedNetwork] = useState<boolean>(false);
+  const [showAdvancedNetwork, setShowAdvancedNetwork] = useState<boolean>(true);
   const [aiServerCheck, setAiServerCheck] = useState<{
     tested: boolean;
     online: boolean;
@@ -231,59 +231,120 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Cloud MQTT Device Pairing Section */}
+        {/* Local Network & Hardware Pairing Section */}
         <div className="bg-forest-50/80 border border-forest-200 rounded-2xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Cloud className="w-4 h-4 text-forest-700" />
+              <Wifi className="w-4 h-4 text-forest-700" />
               <h4 className="text-xs font-bold uppercase tracking-wider text-forest-900">
-                Cloud MQTT Device Pairing
+                Local Hardware & Online AI Brain Connection
               </h4>
             </div>
             <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
-              telemetry.mqttConnected 
+              aiServerCheck.online 
                 ? 'bg-emerald-100 text-emerald-950 border-emerald-300' 
-                : 'bg-amber-100 text-amber-950 border-amber-300'
+                : 'bg-solar-100 text-solar-950 border-solar-300'
             }`}>
-              {telemetry.mqttConnected ? '🟢 Cloud MQTT Online' : '⚪ Cloud Ready'}
+              {aiServerCheck.online ? '🟢 AI Brain Connected' : '⚪ AI Brain Standby'}
             </span>
           </div>
           <p className="text-xs text-forest-600">
-            Connects your ESP32-CAM to the live website from anywhere over secure WebSockets (WSS).
+            Connect to your ESP32-CAM on your local Wi-Fi / Hotspot while leveraging the online AI Vision backend for rice pest identification.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          {/* Quick Preset Buttons */}
+          <div className="flex flex-wrap gap-2 pt-1">
+            <span className="text-[11px] font-bold text-forest-800 self-center">Presets:</span>
+            <button
+              type="button"
+              onClick={() => setFormConfig({ 
+                ...formConfig, 
+                aiServerUrl: 'https://ecoecho-backend-1a6d.onrender.com',
+                aiApiEndpoint: 'https://ecoecho-backend-1a6d.onrender.com/api/detect'
+              })}
+              className="text-[11px] font-bold px-2.5 py-1 bg-white hover:bg-forest-100 text-forest-900 rounded-lg border border-forest-200 transition-colors cursor-pointer"
+            >
+              ☁️ Cloud AI (Render)
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormConfig({ 
+                ...formConfig, 
+                aiServerUrl: 'http://127.0.0.1:5000',
+                aiApiEndpoint: 'http://127.0.0.1:5000/api/detect'
+              })}
+              className="text-[11px] font-bold px-2.5 py-1 bg-white hover:bg-forest-100 text-forest-900 rounded-lg border border-forest-200 transition-colors cursor-pointer"
+            >
+              💻 Local AI (127.0.0.1:5000)
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormConfig({ ...formConfig, esp32Ip: '192.168.100.135' })}
+              className="text-[11px] font-bold px-2.5 py-1 bg-white hover:bg-forest-100 text-forest-900 rounded-lg border border-forest-200 transition-colors cursor-pointer"
+            >
+              📡 Wi-Fi ESP32 (192.168.100.135)
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormConfig({ ...formConfig, esp32Ip: '192.168.4.1' })}
+              className="text-[11px] font-bold px-2.5 py-1 bg-white hover:bg-forest-100 text-forest-900 rounded-lg border border-forest-200 transition-colors cursor-pointer"
+            >
+              📱 ESP32 AP (192.168.4.1)
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <div>
-              <label className="block text-[11px] font-bold text-forest-900 mb-1">
-                Device Serial Number / ID
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-forest-900">
+                  ESP32 Field Station Local IP
+                </label>
+                <a
+                  href={`http://${formConfig.esp32Ip}/capture`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-forest-600 hover:text-forest-900 underline font-semibold"
+                >
+                  Test /capture
+                </a>
+              </div>
               <input
                 type="text"
                 required
-                value={formConfig.deviceId}
-                onChange={(e) => setFormConfig({ ...formConfig, deviceId: e.target.value })}
-                placeholder="e.g. ECOECHO-01"
-                className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono font-bold text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
+                value={formConfig.esp32Ip}
+                onChange={(e) => setFormConfig({ ...formConfig, esp32Ip: e.target.value })}
+                placeholder="e.g. 192.168.4.1"
+                className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-forest-900 mb-1">
-                Cloud MQTT Broker URL
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-forest-900">
+                  Local AI Server URL
+                </label>
+                <a
+                  href={`${formConfig.aiServerUrl}/api/status`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-forest-600 hover:text-forest-900 underline font-semibold"
+                >
+                  Test /api/status
+                </a>
+              </div>
               <input
                 type="text"
                 required
-                value={formConfig.mqttBrokerUrl}
-                onChange={(e) => setFormConfig({ ...formConfig, mqttBrokerUrl: e.target.value })}
-                placeholder="wss://broker.hivemq.com:8884/mqtt"
+                value={formConfig.aiServerUrl}
+                onChange={(e) => setFormConfig({ ...formConfig, aiServerUrl: e.target.value })}
+                placeholder="http://127.0.0.1:5000"
                 className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
               />
             </div>
           </div>
         </div>
 
-        {/* Collapsible Advanced Network Settings */}
+        {/* Optional Cloud MQTT Device Pairing Section */}
         <div className="border border-forest-100 rounded-2xl p-4 bg-forest-50/40">
           <button
             type="button"
@@ -291,39 +352,37 @@ export const SettingsPage: React.FC = () => {
             className="w-full flex items-center justify-between text-xs font-bold text-forest-900 cursor-pointer"
           >
             <span className="flex items-center space-x-2">
-              <Wifi className="w-4 h-4" />
-              <span>Advanced Direct IP & AI Server Configuration</span>
+              <Cloud className="w-4 h-4 text-forest-600" />
+              <span>Optional Cloud MQTT Stream Configuration</span>
             </span>
             {showAdvancedNetwork ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
 
           {showAdvancedNetwork && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 animate-in fade-in duration-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 animate-in fade-in duration-200">
               <div>
-                <label className="block text-xs font-bold text-forest-900 mb-1">
-                  ESP32 Field Station Local IP
+                <label className="block text-[11px] font-bold text-forest-900 mb-1">
+                  Device Serial Number / ID
                 </label>
                 <input
                   type="text"
-                  required
-                  value={formConfig.esp32Ip}
-                  onChange={(e) => setFormConfig({ ...formConfig, esp32Ip: e.target.value })}
-                  placeholder="e.g. 192.168.100.135"
-                  className="w-full px-3.5 py-2.5 bg-forest-50/60 border border-forest-200 rounded-xl text-xs font-mono text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white"
+                  value={formConfig.deviceId}
+                  onChange={(e) => setFormConfig({ ...formConfig, deviceId: e.target.value })}
+                  placeholder="e.g. ECOECHO-01"
+                  className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono font-bold text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-forest-900 mb-1">
-                  AI Server / Public Tunnel URL
+                <label className="block text-[11px] font-bold text-forest-900 mb-1">
+                  Cloud MQTT Broker URL
                 </label>
                 <input
                   type="text"
-                  required
-                  value={formConfig.aiServerUrl}
-                  onChange={(e) => setFormConfig({ ...formConfig, aiServerUrl: e.target.value })}
-                  placeholder="e.g. http://127.0.0.1:5000 or https://xxxx.loca.lt"
-                  className="w-full px-3.5 py-2.5 bg-forest-50/60 border border-forest-200 rounded-xl text-xs font-mono text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white"
+                  value={formConfig.mqttBrokerUrl}
+                  onChange={(e) => setFormConfig({ ...formConfig, mqttBrokerUrl: e.target.value })}
+                  placeholder="wss://broker.hivemq.com:8884/mqtt"
+                  className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
                 />
               </div>
             </div>

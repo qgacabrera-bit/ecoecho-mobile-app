@@ -1,19 +1,19 @@
 """
 EcoEcho AI Vision Inference & Video Stream Server
 =================================================
-Uses 'best.pt' YOLO model to run real-time rice pest detection on:
-1) Local Webcams (OpenCV cv2.VideoCapture)
-2) Browser webcam frames sent via /api/detect (POST)
-3) ESP32-CAM HTTP capture stream
-4) Image file uploads / sample test images
+Runs real-time rice pest detection using the YOLO 'best.pt' model on:
+1) ESP32-CAM Local HTTP capture stream (Default: AP mode 192.168.4.1 or Local Wi-Fi IP)
+2) Local Webcams (OpenCV cv2.VideoCapture)
+3) Browser webcam frames sent via /api/detect (POST)
+4) Uploaded image files / sample test images
 
 Model Classes Detected by best.pt:
-0: brown-planthopper (Nilaparvata lugens)
-1: green-leafhopper (Nephotettix virescens)
-2: leaf-folder (Cnaphalocrocis medinalis)
-3: rice-bug (Leptocorisa oratorius)
-4: stem-borer (Scirpophaga incertulas)
-5: whorl-maggot (Hydrellia philippina)
+0: brown-planthopper (Nilaparvata lugens) -> Triggers 42.5 kHz targeted acoustic jamming
+1: green-leafhopper (Nephotettix virescens) -> Triggers 38.0 kHz acoustic sweep
+2: leaf-folder (Cnaphalocrocis medinalis) -> Triggers 36.0 kHz acoustic sweep
+3: rice-bug (Leptocorisa oratorius) -> Triggers 34.0 kHz acoustic sweep
+4: stem-borer (Scirpophaga incertulas) -> Triggers 40.0 kHz acoustic sweep
+5: whorl-maggot (Hydrellia philippina) -> Triggers 32.0 kHz acoustic sweep
 """
 
 import os
@@ -27,6 +27,7 @@ import io
 import time
 import json
 import base64
+import argparse
 import threading
 import requests
 import numpy as np
@@ -38,27 +39,46 @@ from ultralytics import YOLO
 app = Flask(__name__)
 CORS(app)
 
+def normalize_esp32_url(raw_url: str) -> str:
+    """Normalizes an IP address or URL into a valid ESP32 capture endpoint."""
+    if not raw_url:
+        return "http://192.168.4.1/capture"
+    url = raw_url.strip()
+    if not url.startswith("http://") and not url.startswith("https://"):
+        url = "http://" + url
+    # If no path specified, default to /capture
+    parts = url.split("://", 1)[1]
+    if "/" not in parts:
+        url = url.rstrip("/") + "/capture"
+    return url
+
 # Configuration & Defaults
-DEFAULT_CAMERA_SOURCE = os.environ.get("CAMERA_SOURCE", "webcam").lower()  # 'webcam' or 'esp32'
+DEFAULT_CAMERA_SOURCE = os.environ.get("CAMERA_SOURCE", "esp32").lower()  # 'esp32' or 'webcam'
 DEFAULT_WEBCAM_INDEX = int(os.environ.get("WEBCAM_INDEX", 0))
-DEFAULT_ESP32_URL = os.environ.get("ESP32_CAM_URL", "http://192.168.100.135/capture")
+DEFAULT_ESP32_URL = normalize_esp32_url(os.environ.get("ESP32_CAM_URL", "http://192.168.4.1/capture"))
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "best.pt")
-CONFIDENCE_THRESHOLD = float(os.environ.get("CONFIDENCE_THRESHOLD", 0.70))  # 70% Confidence
+CONFIDENCE_THRESHOLD = float(os.environ.get("CONFIDENCE_THRESHOLD", 0.70))  # 70% Confidence default
 IMAGE_SIZE = int(os.environ.get("IMAGE_SIZE", 640))
 
 # Scientific names mapping for the 6 exact classes from best.pt
 SCIENTIFIC_NAMES = {
-    "brown-planthopper": ("Brown Planthopper", "Nilaparvata lugens"),
-    "green-leafhopper": ("Green Leafhopper", "Nephotettix virescens"),
-    "leaf-folder": ("Leaf Folder", "Cnaphalocrocis medinalis"),
-    "rice-bug": ("Rice Bug", "Leptocorisa oratorius"),
-    "stem-borer": ("Rice Stem Borer", "Scirpophaga incertulas"),
-    "whorl-maggot": ("Whorl Maggot", "Hydrellia philippina"),
+    "brown-planthopper": ("Brown Planthopper", "Nilaparvata lugens", 42.5),
+    "brown_planthopper": ("Brown Planthopper", "Nilaparvata lugens", 42.5),
+    "green-leafhopper": ("Green Leafhopper", "Nephotettix virescens", 38.0),
+    "green_leafhopper": ("Green Leafhopper", "Nephotettix virescens", 38.0),
+    "leaf-folder": ("Rice Leaf Folder", "Cnaphalocrocis medinalis", 36.0),
+    "leaf_folder": ("Rice Leaf Folder", "Cnaphalocrocis medinalis", 36.0),
+    "rice-bug": ("Rice Bug", "Leptocorisa oratorius", 34.0),
+    "rice_bug": ("Rice Bug", "Leptocorisa oratorius", 34.0),
+    "stem-borer": ("Yellow Stem Borer", "Scirpophaga incertulas", 40.0),
+    "stem_borer": ("Yellow Stem Borer", "Scirpophaga incertulas", 40.0),
+    "whorl-maggot": ("Rice Whorl Maggot", "Hydrellia philippina", 32.0),
+    "whorl_maggot": ("Rice Whorl Maggot", "Hydrellia philippina", 32.0),
 }
 
-# State
+# Server State
 state = {
-    "camera_source": DEFAULT_CAMERA_SOURCE,  # 'webcam' or 'esp32'
+    "camera_source": DEFAULT_CAMERA_SOURCE,  # 'esp32' or 'webcam'
     "webcam_index": DEFAULT_WEBCAM_INDEX,
     "esp32_url": DEFAULT_ESP32_URL,
     "confidence_threshold": CONFIDENCE_THRESHOLD,
@@ -71,7 +91,8 @@ state = {
     "camera_connected": False,
     "fps": 0,
     "active_mode": "AUTOMATIC",
-    "error_message": None
+    "error_message": None,
+    "last_push_frame_time": 0
 }
 
 # Load YOLO model
@@ -79,27 +100,49 @@ print(f"[EcoEcho AI Server] Loading YOLO weights from {MODEL_PATH}...")
 try:
     model = YOLO(MODEL_PATH)
     state["model_loaded"] = True
-    print(f"[EcoEcho AI Server] Model 'best.pt' loaded successfully!")
-    print(f"[EcoEcho AI Server] Target classes: {model.names}")
+    print(f"[EcoEcho AI Server] ✅ Model 'best.pt' loaded successfully!")
+    print(f"[EcoEcho AI Server] 🎯 Model classes: {model.names}")
 except Exception as e:
-    print(f"[EcoEcho AI Server] Error loading model: {e}")
+    print(f"[EcoEcho AI Server] ❌ Error loading model: {e}")
     model = None
 
 
-def generate_dummy_paddy_frame():
-    """Generates a synthetic green rice paddy frame if camera is offline for demonstration"""
-    img = np.zeros((360, 640, 3), dtype=np.uint8)
-    for y in range(360):
-        ratio = y / 360.0
-        g = int(50 + ratio * 60)
-        b = int(25 + ratio * 30)
-        r = int(18 + ratio * 20)
+def generate_standby_frame(message: str = None):
+    """Generates an aesthetic standby frame with live status info when camera is connecting"""
+    img = np.zeros((480, 640, 3), dtype=np.uint8)
+    # Gradient rice paddy night background
+    for y in range(480):
+        ratio = y / 480.0
+        g = int(35 + ratio * 45)
+        b = int(18 + ratio * 25)
+        r = int(12 + ratio * 15)
         img[y, :] = (b, g, r)
 
-    cv2.line(img, (120, 360), (220, 160), (100, 180, 80), 6)
-    cv2.line(img, (320, 360), (260, 120), (120, 200, 90), 8)
-    cv2.line(img, (480, 360), (540, 140), (90, 170, 70), 7)
-    cv2.putText(img, "EcoEcho AI Vision (Camera Standby)", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (200, 255, 200), 2)
+    # Decorative paddy lines
+    cv2.line(img, (80, 480), (180, 240), (45, 90, 40), 4)
+    cv2.line(img, (240, 480), (280, 200), (55, 110, 50), 5)
+    cv2.line(img, (420, 480), (400, 220), (40, 85, 35), 4)
+    cv2.line(img, (560, 480), (520, 260), (50, 100, 45), 4)
+
+    # Status box
+    cv2.rectangle(img, (40, 140), (600, 340), (20, 35, 20), -1)
+    cv2.rectangle(img, (40, 140), (600, 340), (60, 140, 60), 2)
+
+    cv2.putText(img, "EcoEcho AI Vision System (Local Mode)", (65, 185), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 2)
+    
+    src = state.get("camera_source", "esp32").upper()
+    cv2.putText(img, f"Active Source: {src}", (65, 225), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (120, 220, 120), 1)
+    
+    if src == "ESP32":
+        target = state.get("esp32_url", "http://192.168.4.1/capture")
+        cv2.putText(img, f"Polling ESP32 Target: {target}", (65, 255), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1)
+    else:
+        cv2.putText(img, f"Webcam Index: {state.get('webcam_index', 0)}", (65, 255), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1)
+
+    status_msg = message or state.get("error_message") or "Waiting for camera connection..."
+    cv2.putText(img, f"Status: {status_msg}", (65, 295), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (80, 220, 255), 1)
+    cv2.putText(img, time.strftime("%Y-%m-%d %H:%M:%S"), (65, 325), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (150, 150, 150), 1)
+
     return img
 
 
@@ -111,6 +154,8 @@ def process_frame(frame, conf=None):
     conf_thresh = conf if conf is not None else state.get("confidence_threshold", 0.70)
     h, w = frame.shape[:2]
     t0 = time.time()
+    
+    # YOLO prediction
     results = model.predict(frame, imgsz=IMAGE_SIZE, conf=conf_thresh, verbose=False)
     infer_ms = (time.time() - t0) * 1000
 
@@ -121,7 +166,7 @@ def process_frame(frame, conf=None):
     if boxes is not None and len(boxes) > 0:
         for idx, box in enumerate(boxes):
             cls_id = int(box.cls[0].item())
-            raw_cls_name = model.names.get(cls_id, f"class_{cls_id}").lower()
+            raw_cls_name = str(model.names.get(cls_id, f"class_{cls_id}")).lower().strip()
             conf_val = float(box.conf[0].item())
 
             # Bounding box in pixels: [x1, y1, x2, y2]
@@ -134,16 +179,17 @@ def process_frame(frame, conf=None):
             pct_w = max(1.0, min(100.0, ((x2 - x1) / w) * 100.0))
             pct_h = max(1.0, min(100.0, ((y2 - y1) / h) * 100.0))
 
-            pretty_name, scientific = SCIENTIFIC_NAMES.get(
+            info = SCIENTIFIC_NAMES.get(
                 raw_cls_name, 
-                (raw_cls_name.replace("-", " ").title(), "Agricultural Insect")
+                (raw_cls_name.replace("-", " ").replace("_", " ").title(), "Agricultural Insect", 36.0)
             )
+            pretty_name, scientific, target_freq = info
 
             is_bph = "planthopper" in raw_cls_name
             action = (
-                "Acoustic Jamming Active (42.5 kHz)" 
+                f"Acoustic Jamming Active ({target_freq} kHz)" 
                 if is_bph 
-                else "Continuous Sound Sweep Active"
+                else f"Ultrasonic Sweep Active ({target_freq} kHz)"
             )
 
             detections.append({
@@ -160,7 +206,7 @@ def process_frame(frame, conf=None):
                 },
                 "actionTaken": action,
                 "intensity": "HIGH" if conf_val > 0.80 else "MEDIUM",
-                "coordinates": "Field Canopy",
+                "coordinates": f"Sector {['A-1', 'A-2', 'B-1', 'B-2', 'C-1'][idx % 5]}",
                 "isDeterred": is_bph and (state["active_mode"] == "DYNAMIC")
             })
 
@@ -172,18 +218,18 @@ def process_frame(frame, conf=None):
 
 
 def camera_worker():
-    """Continuous background worker to grab frames from Local Webcam or ESP32-CAM and run YOLO"""
+    """Continuous background worker to grab frames from ESP32-CAM or Webcam and run YOLO"""
     fps_count = 0
     fps_timer = time.time()
     active_cap = None
     current_cap_idx = None
-    consecutive_fail_count = 0
+    last_log_time = 0
 
     while True:
         source = state["camera_source"]
         is_pushing = (time.time() - state.get("last_push_frame_time", 0)) < 3.0
 
-        # If an ESP32 or client is actively pushing frames to /api/detect, prioritize that stream!
+        # If a client is actively pushing frames via /api/detect, prioritize that push stream
         if is_pushing:
             if active_cap is not None:
                 try:
@@ -192,16 +238,47 @@ def camera_worker():
                     pass
                 active_cap = None
                 current_cap_idx = None
-            
             state["camera_connected"] = True
             time.sleep(0.04)
             continue
 
         frame = None
 
-        if source == "webcam":
+        if source == "esp32":
+            if active_cap is not None:
+                try:
+                    active_cap.release()
+                except Exception:
+                    pass
+                active_cap = None
+                current_cap_idx = None
+
+            target_url = normalize_esp32_url(state["esp32_url"])
+            try:
+                # Fast HTTP GET with 1.8s timeout
+                resp = requests.get(target_url, timeout=1.8)
+                if resp.status_code == 200 and len(resp.content) > 100:
+                    img_array = np.frombuffer(resp.content, dtype=np.uint8)
+                    decoded = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                    if decoded is not None:
+                        frame = decoded
+                        state["camera_connected"] = True
+                        state["error_message"] = None
+                        if time.time() - last_log_time > 15:
+                            print(f"[EcoEcho AI Server] 📷 ESP32 frame captured from {target_url} ({frame.shape[1]}x{frame.shape[0]})")
+                            last_log_time = time.time()
+                else:
+                    state["camera_connected"] = False
+                    state["error_message"] = f"ESP32 returned HTTP {resp.status_code}"
+            except Exception as e:
+                state["camera_connected"] = False
+                state["error_message"] = f"Connecting to ESP32 at {target_url}..."
+                if time.time() - last_log_time > 10:
+                    print(f"[EcoEcho AI Server] ⏳ Waiting for ESP32 connection at {target_url}...")
+                    last_log_time = time.time()
+
+        elif source == "webcam":
             webcam_idx = state["webcam_index"]
-            # Initialize or recreate capture if index changed or cap closed
             if active_cap is None or current_cap_idx != webcam_idx or not active_cap.isOpened():
                 if active_cap is not None:
                     try:
@@ -209,7 +286,7 @@ def camera_worker():
                     except Exception:
                         pass
                 
-                print(f"[EcoEcho AI Server] Initializing webcam index {webcam_idx} with DirectShow...")
+                print(f"[EcoEcho AI Server] Initializing local webcam index {webcam_idx}...")
                 if sys.platform.startswith("win"):
                     active_cap = cv2.VideoCapture(webcam_idx, cv2.CAP_DSHOW)
                 else:
@@ -224,7 +301,6 @@ def camera_worker():
                     current_cap_idx = webcam_idx
                     state["camera_connected"] = True
                     state["error_message"] = None
-                    consecutive_fail_count = 0
                     print(f"[EcoEcho AI Server] ✅ Webcam {webcam_idx} opened successfully!")
                 else:
                     current_cap_idx = None
@@ -237,135 +313,31 @@ def camera_worker():
                     frame = captured
                     state["camera_connected"] = True
                     state["error_message"] = None
-                    consecutive_fail_count = 0
                 else:
-                    consecutive_fail_count += 1
-                    if consecutive_fail_count > 10:
-                        state["camera_connected"] = False
-                        state["error_message"] = f"Webcam {webcam_idx} not returning frames"
-                        time.sleep(0.5)
-
-        elif source == "esp32":
-            if active_cap is not None:
-                try:
-                    active_cap.release()
-                except Exception:
-                    pass
-                active_cap = None
-                current_cap_idx = None
-
-            target_url = state["esp32_url"]
-            try:
-                resp = requests.get(target_url, timeout=2.0)
-                if resp.status_code == 200:
-                    img_array = np.frombuffer(resp.content, dtype=np.uint8)
-                    frame = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-                    if frame is not None:
-                        state["camera_connected"] = True
-                        state["error_message"] = None
-            except Exception:
-                if state.get("last_annotated_frame") is None:
                     state["camera_connected"] = False
-                    state["error_message"] = f"Waiting for ESP32 stream..."
+                    state["error_message"] = f"Webcam {webcam_idx} not returning frames"
 
+        # Process frame with YOLO or show standby
         if frame is not None:
             state["last_frame"] = frame
             annotated, _ = process_frame(frame)
             state["last_annotated_frame"] = annotated
-        elif state["last_annotated_frame"] is None:
-            state["last_annotated_frame"] = generate_dummy_paddy_frame()
-
-        fps_count += 1
-        if time.time() - fps_timer >= 1.0:
-            state["fps"] = fps_count
-            fps_count = 0
-            fps_timer = time.time()
-
-        time.sleep(0.04 if source == "webcam" else 0.1)
-
-        fps_count += 1
-        if time.time() - fps_timer >= 1.0:
-            state["fps"] = fps_count
-            fps_count = 0
-            fps_timer = time.time()
-
-        time.sleep(0.04 if source == "webcam" else 0.1)
-
-
-def start_mqtt_client():
-    """Subscribes to Cloud MQTT broker to ingest ESP32 frames in real-time"""
-    try:
-        import paho.mqtt.client as mqtt_client
-    except ImportError:
-        print("[EcoEcho AI Server] paho-mqtt not installed; skipping background MQTT listener.")
-        return
-
-    mqtt_broker = os.environ.get("MQTT_BROKER", "broker.hivemq.com")
-    mqtt_port = int(os.environ.get("MQTT_PORT", 1883))
-
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print(f"[EcoEcho AI Server] ☁️ Connected to Cloud MQTT Broker ({mqtt_broker}:{mqtt_port})")
-            client.subscribe("ecoecho/+/camera")
-            print("[EcoEcho AI Server] 📡 Subscribed to 'ecoecho/+/camera' for live pest vision")
         else:
-            print(f"[EcoEcho AI Server] ⚠️ MQTT connection failed with code {rc}")
+            state["last_annotated_frame"] = generate_standby_frame()
 
-    def on_message(client, userdata, msg):
-        try:
-            topic = msg.topic
-            payload = msg.payload
-            
-            parts = topic.split("/")
-            device_id = parts[1] if len(parts) > 1 else "ECOECHO-01"
+        fps_count += 1
+        if time.time() - fps_timer >= 1.0:
+            state["fps"] = fps_count
+            fps_count = 0
+            fps_timer = time.time()
 
-            img = None
-            try:
-                text = payload.decode("utf-8")
-                if text.startswith("data:image"):
-                    text = text.split(",", 1)[1]
-                img_bytes = base64.b64decode(text)
-                nparr = np.frombuffer(img_bytes, np.uint8)
-                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-            except Exception:
-                pass
-
-            if img is None:
-                nparr = np.frombuffer(payload, np.uint8)
-                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-            if img is not None:
-                annotated, detections = process_frame(img)
-                state["last_frame"] = img
-                state["last_annotated_frame"] = annotated
-                state["last_push_frame_time"] = time.time()
-                state["camera_source"] = "esp32"
-                state["camera_connected"] = True
-
-                if detections:
-                    det_topic = f"ecoecho/{device_id}/detections"
-                    client.publish(det_topic, json.dumps(detections))
-        except Exception:
-            pass
-
-    client = mqtt_client.Client(client_id=f"ecoecho_ai_server_{int(time.time())}")
-    client.on_connect = on_connect
-    client.on_message = on_message
-
-    try:
-        client.connect(mqtt_broker, mqtt_port, 60)
-        client.loop_start()
-    except Exception as e:
-        print(f"[EcoEcho AI Server] ⚠️ MQTT connect error: {e}")
+        # Small delay between frame polls
+        time.sleep(0.04 if source == "webcam" else 0.1)
 
 
-# Start background inference thread
+# Start background inference worker thread
 worker_thread = threading.Thread(target=camera_worker, daemon=True)
 worker_thread.start()
-
-# Start background MQTT ingestion client
-mqtt_thread = threading.Thread(target=start_mqtt_client, daemon=True)
-mqtt_thread.start()
 
 
 @app.route("/")
@@ -422,7 +394,7 @@ def get_detections():
 def get_latest_frame():
     frame = state["last_annotated_frame"]
     if frame is None:
-        frame = generate_dummy_paddy_frame()
+        frame = generate_standby_frame()
 
     _, buffer = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
     return Response(buffer.tobytes(), mimetype="image/jpeg")
@@ -433,7 +405,7 @@ def mjpeg_generator():
     while True:
         frame = state["last_annotated_frame"]
         if frame is None:
-            frame = generate_dummy_paddy_frame()
+            frame = generate_standby_frame()
 
         _, buffer = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
         yield (b"--frame\r\n"
@@ -451,7 +423,6 @@ def detect_upload():
     """
     Accepts an uploaded image file, JSON base64 frame from browser webcam, or raw bytes
     and runs YOLO best.pt inference at the requested confidence threshold (default 70%).
-    Handles GET requests gracefully with API info.
     """
     if request.method == "GET":
         return jsonify({
@@ -491,13 +462,15 @@ def detect_upload():
             nparr = np.frombuffer(request.data, np.uint8)
             img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
+        if img is None:
+            return jsonify({"error": "No valid image payload provided"}), 400
+
         annotated, detections = process_frame(img, conf=custom_conf)
         
-        # Update live stream buffer so /api/annotated-stream shows ESP32 frames in real-time
+        # Update live stream buffer
         state["last_frame"] = img
         state["last_annotated_frame"] = annotated
         state["last_push_frame_time"] = time.time()
-        state["camera_source"] = "esp32"
         state["camera_connected"] = True
         
         # Encode annotated preview
@@ -543,7 +516,8 @@ def update_config():
         except ValueError:
             pass
     if "esp32Url" in data:
-        state["esp32_url"] = str(data["esp32Url"])
+        state["esp32_url"] = normalize_esp32_url(str(data["esp32Url"]))
+        print(f"[EcoEcho AI Server] ESP32 URL updated to: {state['esp32_url']}")
     if "activeMode" in data:
         state["active_mode"] = str(data["activeMode"])
     
@@ -559,21 +533,34 @@ def update_config():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    use_ngrok = "--ngrok" in sys.argv or os.environ.get("USE_NGROK", "false").lower() in ("true", "1")
+    parser = argparse.ArgumentParser(description="EcoEcho AI Vision Server (best.pt)")
+    parser.add_argument("--esp32", type=str, default=None, help="ESP32-CAM URL or IP address (e.g. 192.168.4.1 or http://192.168.1.100/capture)")
+    parser.add_argument("--webcam", action="store_true", help="Use local webcam instead of ESP32-CAM")
+    parser.add_argument("--webcam-index", type=int, default=0, help="Webcam device index (default: 0)")
+    parser.add_argument("--conf", type=float, default=0.70, help="Confidence threshold (default: 0.70)")
+    parser.add_argument("--port", type=int, default=5000, help="Port to run AI server on (default: 5000)")
+    parser.add_argument("--ngrok", action="store_true", help="Start public Ngrok tunnel")
+    parser.add_argument("--token", type=str, default=None, help="Ngrok authtoken")
     
-    # Check for authtoken argument (e.g. --token=xxxx or NGROK_AUTHTOKEN env)
-    token = os.environ.get("NGROK_AUTHTOKEN")
-    for arg in sys.argv:
-        if arg.startswith("--token="):
-            token = arg.split("=", 1)[1]
-        elif arg.startswith("--authtoken="):
-            token = arg.split("=", 1)[1]
+    args, unknown = parser.parse_known_args()
 
+    if args.esp32:
+        state["esp32_url"] = normalize_esp32_url(args.esp32)
+        state["camera_source"] = "esp32"
+    elif args.webcam:
+        state["camera_source"] = "webcam"
+        state["webcam_index"] = args.webcam_index
+
+    if args.conf:
+        state["confidence_threshold"] = args.conf
+
+    port = args.port
     public_url = None
-    if use_ngrok:
+
+    if args.ngrok:
         try:
             from pyngrok import ngrok
+            token = args.token or os.environ.get("NGROK_AUTHTOKEN")
             if token:
                 ngrok.set_auth_token(token)
                 print(f"[EcoEcho AI Server] ✅ Ngrok auth token configured.")
@@ -585,19 +572,22 @@ if __name__ == "__main__":
             print(f"\n" + "=" * 60)
             print(f"🌍 PUBLIC NGROK TUNNEL ACTIVE!")
             print(f"👉 Public AI Server URL: {public_url}")
-            print(f"👉 Point your ESP32 or Remote Dashboard to: {public_url}")
             print(f"=" * 60 + "\n")
         except Exception as e:
-            print(f"[EcoEcho AI Server] ⚠️ Ngrok tunnel failed to start: {e}")
-            print(f"👉 Tip: To set your free authtoken, run: python ai_server.py --ngrok --token=YOUR_TOKEN\n")
+            print(f"[EcoEcho AI Server] ⚠️ Ngrok tunnel notice: {e}")
 
     print(f"\n=======================================================")
-    print(f"🚀 EcoEcho AI Inference Server starting on http://127.0.0.1:{port}")
+    print(f"🌾 EcoEcho AI Vision Server (Local Network)")
+    print(f"🚀 Running locally on: http://127.0.0.1:{port}")
     if public_url:
         print(f"🌐 Remote Public URL: {public_url}")
-    print(f"📷 Primary Camera Source: {state['camera_source'].upper()} (Webcam Index: {state['webcam_index']})")
-    print(f"🎯 Confidence Threshold: {state['confidence_threshold']*100:.0f}%")
-    print(f"📡 ESP32-CAM Target URL: {state['esp32_url']}")
-    print(f"🧠 Model: {MODEL_PATH}")
+    print(f"📷 Primary Camera Source: {state['camera_source'].upper()}")
+    if state['camera_source'] == "esp32":
+        print(f"📡 ESP32-CAM Target URL: {state['esp32_url']}")
+    else:
+        print(f"📹 Local Webcam Index: {state['webcam_index']}")
+    print(f"🎯 Detection Confidence: {state['confidence_threshold']*100:.0f}%")
+    print(f"🧠 YOLO Weights: {MODEL_PATH}")
     print(f"=======================================================\n")
+
     app.run(host="0.0.0.0", port=port, debug=False, threaded=True)

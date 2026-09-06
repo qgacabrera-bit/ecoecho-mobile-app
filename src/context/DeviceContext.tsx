@@ -12,6 +12,7 @@ import {
   fetchDeviceStatus, 
   toggleDeviceMode, 
   getAIDetections, 
+  detectFrameFromAI,
   generateLiveSimulationEvent,
   triggerFrequencyTest as apiTriggerTest
 } from '../services/api';
@@ -178,7 +179,9 @@ export const DeviceProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         // If Python AI server is online, fetch live detections from best.pt
         if (data.aiServerOnline) {
           const live = await getAIDetections(config, mode);
-          pushLiveDetections(live);
+          if (live && live.length > 0) {
+            pushLiveDetections(live);
+          }
         }
       } catch (err) {
         console.error('[EcoEcho] Telemetry poll error:', err);
@@ -186,9 +189,46 @@ export const DeviceProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     };
 
     poll();
-    intervalId = setInterval(poll, 1200);
+    intervalId = setInterval(poll, 1500);
     return () => clearInterval(intervalId);
   }, [config, isTestingSweep, activeTestFrequency, mode, pushLiveDetections]);
+
+  // Local Network ESP32 -> Online AI Backend Real-Time Inference Loop
+  useEffect(() => {
+    if (config.cameraSource !== 'ESP32' || !config.esp32Ip || !config.aiServerUrl) return;
+
+    let isFetching = false;
+    const interval = setInterval(async () => {
+      if (isFetching) return;
+      isFetching = true;
+      try {
+        const captureUrl = `http://${config.esp32Ip}/capture`;
+        const resp = await fetch(captureUrl, { 
+          signal: AbortSignal.timeout(2000),
+          cache: 'no-cache'
+        });
+        if (resp.ok) {
+          const blob = await resp.blob();
+          const result = await detectFrameFromAI(blob, config);
+          if (result.success && result.detections) {
+            pushLiveDetections(result.detections);
+            setTelemetry(prev => ({
+              ...prev,
+              cameraConnected: true,
+              lastInferenceMs: result.inferenceMs,
+              aiServerOnline: true
+            }));
+          }
+        }
+      } catch {
+        // ESP32 or AI server waiting for next frame
+      } finally {
+        isFetching = false;
+      }
+    }, 1200);
+
+    return () => clearInterval(interval);
+  }, [config.cameraSource, config.esp32Ip, config.aiServerUrl, config.sensitivityThreshold, pushLiveDetections]);
 
   // Real-time Cloud MQTT Client (HiveMQ / EMQX WSS)
   useEffect(() => {

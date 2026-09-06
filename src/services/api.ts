@@ -16,9 +16,13 @@ export const getDefaultConfig = (): DeviceConfig => {
       const parsed = JSON.parse(saved);
       return {
         ...parsed,
+        aiServerUrl: parsed.aiServerUrl || 'https://ecoecho-backend-1a6d.onrender.com',
+        aiApiEndpoint: parsed.aiApiEndpoint || 'https://ecoecho-backend-1a6d.onrender.com/api/detect',
+        esp32Ip: parsed.esp32Ip || '192.168.100.135',
+        wsUrl: parsed.wsUrl || 'ws://192.168.100.135:81',
         mqttBrokerUrl: parsed.mqttBrokerUrl || 'wss://broker.hivemq.com:8884/mqtt',
         deviceId: parsed.deviceId || 'ECOECHO-01',
-        cameraSource: parsed.cameraSource || 'WEBCAM',
+        cameraSource: parsed.cameraSource || 'ESP32',
         webcamIndex: parsed.webcamIndex ?? 0
       };
     } catch {
@@ -32,7 +36,7 @@ export const getDefaultConfig = (): DeviceConfig => {
     deviceId: 'ECOECHO-01',
     aiApiEndpoint: 'https://ecoecho-backend-1a6d.onrender.com/api/detect',
     aiServerUrl: 'https://ecoecho-backend-1a6d.onrender.com',
-    cameraSource: 'WEBCAM',
+    cameraSource: 'ESP32',
     webcamIndex: 0,
     useSimulatedHardware: true,
     sweepMinKhz: 20.0,
