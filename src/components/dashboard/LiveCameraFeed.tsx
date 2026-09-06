@@ -10,11 +10,7 @@ import {
   RefreshCw, 
   Target, 
   Check,
-  Wifi,
-  Zap,
-  LifeBuoy,
-  Settings,
-  HelpCircle
+  LifeBuoy
 } from 'lucide-react';
 
 export const LiveCameraFeed: React.FC = () => {
@@ -206,103 +202,35 @@ export const LiveCameraFeed: React.FC = () => {
             <AIDetectionOverlay detections={detections} />
           </div>
         ) : (
-          /* Farmer-Friendly Debug & Troubleshooting View */
-          <div className="absolute inset-0 bg-forest-950/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-5 text-white z-30 overflow-y-auto">
-            
-            {/* Header Status */}
-            <div className="flex items-center space-x-3 border-b border-forest-800/80 pb-2.5">
-              <div className="w-9 h-9 rounded-2xl bg-solar-500/20 border border-solar-500/40 text-solar-400 flex items-center justify-center shrink-0">
-                <CameraOff className="w-4 h-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center space-x-2">
-                  <h4 className="text-sm font-black text-white">
-                    Field Camera Offline
-                  </h4>
-                  <span className="bg-solar-500/20 text-solar-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-solar-500/30">
-                    Needs Attention
-                  </span>
-                </div>
-                <p className="text-[11px] text-forest-300 truncate">
-                  Looking for camera station at <code className="text-solar-300 font-mono font-semibold">http://{cleanIp}:81</code>
-                </p>
-              </div>
+          /* Clean & Simple Farmer Troubleshooting - No Boxes */
+          <div className="absolute inset-0 bg-forest-950/95 flex flex-col items-center justify-center p-6 text-center text-white z-30 space-y-3">
+            <CameraOff className="w-9 h-9 text-solar-400/90" />
+            <div className="space-y-1.5 max-w-sm">
+              <h4 className="text-base font-black text-white">
+                Camera View Offline
+              </h4>
+              <p className="text-xs text-forest-200/90 leading-relaxed font-medium">
+                Try turning the device switch off and on again, and make sure your phone is connected to the field Wi-Fi.
+              </p>
             </div>
 
-            {/* Practical Step-by-Step Farmer Checklist */}
-            <div className="py-2.5 space-y-2">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-forest-400 block">
-                Quick Field Checks:
-              </span>
+            <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+              <button
+                onClick={handleRetryStream}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer active:scale-95"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Try Again</span>
+              </button>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-left">
-                {/* Step 1: Wi-Fi connection */}
-                <div className="bg-forest-900/60 border border-forest-800 rounded-xl p-2.5 space-y-1">
-                  <div className="flex items-center space-x-1.5 text-xs font-bold text-emerald-400">
-                    <Wifi className="w-3.5 h-3.5 shrink-0" />
-                    <span>1. Check Wi-Fi</span>
-                  </div>
-                  <p className="text-[11px] text-forest-200 leading-relaxed">
-                    Ensure your phone is connected to the same farm Wi-Fi or the field station hotspot.
-                  </p>
-                </div>
-
-                {/* Step 2: Solar & Power */}
-                <div className="bg-forest-900/60 border border-forest-800 rounded-xl p-2.5 space-y-1">
-                  <div className="flex items-center space-x-1.5 text-xs font-bold text-solar-400">
-                    <Zap className="w-3.5 h-3.5 shrink-0" />
-                    <span>2. Station Power</span>
-                  </div>
-                  <p className="text-[11px] text-forest-200 leading-relaxed">
-                    Verify the solar battery switch is ON. Check for the green/red indicator LED on the device.
-                  </p>
-                </div>
-
-                {/* Step 3: Verify Station IP */}
-                <div className="bg-forest-900/60 border border-forest-800 rounded-xl p-2.5 space-y-1">
-                  <div className="flex items-center space-x-1.5 text-xs font-bold text-forest-300">
-                    <HelpCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>3. Verify Station IP</span>
-                  </div>
-                  <p className="text-[11px] text-forest-200 leading-relaxed">
-                    Station IP is set to <span className="font-mono text-solar-300 font-bold">{cleanIp}</span>. Change in settings if different.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Direct Action Buttons */}
-            <div className="pt-2 border-t border-forest-800/80 flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                {/* Retry Button */}
-                <button
-                  onClick={handleRetryStream}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer active:scale-95"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Retry Connection</span>
-                </button>
-
-                {/* Settings shortcut */}
-                <button
-                  onClick={() => setActiveTab('settings')}
-                  className="bg-forest-900 hover:bg-forest-800 text-forest-200 hover:text-white text-xs font-medium px-3 py-1.5 rounded-xl border border-forest-700/80 flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Settings className="w-3.5 h-3.5" />
-                  <span>Change IP</span>
-                </button>
-              </div>
-
-              {/* Get Help / Support Shortcut */}
               <button
                 onClick={() => setActiveTab('support')}
-                className="bg-solar-500 hover:bg-solar-400 text-forest-950 text-xs font-black px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer active:scale-95"
+                className="bg-forest-900/90 hover:bg-forest-800 text-forest-200 hover:text-white text-xs font-semibold px-4 py-2 rounded-xl border border-forest-700/80 flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                <LifeBuoy className="w-3.5 h-3.5 text-forest-950" />
-                <span>Contact Field Support</span>
+                <LifeBuoy className="w-3.5 h-3.5 text-solar-400" />
+                <span>Go to Support</span>
               </button>
             </div>
-
           </div>
         )}
 
