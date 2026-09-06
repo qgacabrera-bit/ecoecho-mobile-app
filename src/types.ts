@@ -107,4 +107,6 @@ export interface DeviceConfig {
   dynamicBurstDurationMs: number;
   sensitivityThreshold: number;
   soundAlarmEnabled: boolean;
+  aiEngineMode?: 'ON_DEVICE' | 'CLOUD_RENDER' | 'LOCAL_PC';
 }
+

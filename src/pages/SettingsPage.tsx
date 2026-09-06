@@ -15,7 +15,8 @@ import {
   ChevronUp,
   Radio,
   Volume2,
-  Cloud
+  Cloud,
+  Cpu
 } from 'lucide-react';
 import { AcousticWaveformVisualizer } from '../components/layout/AcousticWaveformVisualizer';
 import { checkAIServerStatus, updateAIServerConfig, cleanHostOrIp } from '../services/api';
@@ -49,7 +50,8 @@ export const SettingsPage: React.FC = () => {
     sweepCycleSeconds: config.sweepCycleSeconds ?? 4,
     dynamicBurstDurationMs: config.dynamicBurstDurationMs,
     sensitivityThreshold: config.sensitivityThreshold ?? 0.70,
-    soundAlarmEnabled: config.soundAlarmEnabled
+    soundAlarmEnabled: config.soundAlarmEnabled,
+    aiEngineMode: config.aiEngineMode || 'ON_DEVICE'
   });
 
   const [isSaved, setIsSaved] = useState<boolean>(false);
@@ -111,7 +113,8 @@ export const SettingsPage: React.FC = () => {
       sweepCycleSeconds: 4,
       dynamicBurstDurationMs: 2500,
       sensitivityThreshold: 0.70,
-      soundAlarmEnabled: true
+      soundAlarmEnabled: true,
+      aiEngineMode: 'ON_DEVICE'
     };
     setFormConfig(defaults);
     updateConfig(defaults);
@@ -157,6 +160,100 @@ export const SettingsPage: React.FC = () => {
       {/* 3. Main Calibration Controls Form */}
       <form onSubmit={handleSave} className="bg-white/90 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-app-border shadow-xs space-y-5">
         
+        {/* AI Engine Execution Location (Phone On-Device vs Cloud vs Local PC) */}
+        <div className="space-y-3 bg-forest-950 text-white p-4 sm:p-5 rounded-2xl border border-forest-800">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Smartphone className="w-5 h-5 text-solar-400" />
+              <div>
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <span>AI Model Execution Mode</span>
+                  <span className="bg-solar-500 text-forest-950 text-[10px] font-black px-2 py-0.5 rounded-md uppercase">
+                    100% Offline Ready
+                  </span>
+                </h4>
+                <p className="text-xs text-forest-300">
+                  Choose where YOLO (best.onnx / best.pt) runs to identify the 6 rice pests.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+            {/* 1. On-Device Phone (Recommended) */}
+            <button
+              type="button"
+              onClick={() => setFormConfig({ ...formConfig, aiEngineMode: 'ON_DEVICE' })}
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                formConfig.aiEngineMode === 'ON_DEVICE' || !formConfig.aiEngineMode
+                  ? 'bg-emerald-900/70 border-emerald-400 ring-2 ring-emerald-400/40 text-white'
+                  : 'bg-forest-900/60 border-forest-800 text-forest-300 hover:bg-forest-900'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between font-bold text-xs mb-1">
+                  <span className="flex items-center gap-1.5 text-white">
+                    <Smartphone className="w-4 h-4 text-emerald-400" />
+                    <span>📱 Phone On-Device</span>
+                  </span>
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold">
+                    Recommended
+                  </span>
+                </div>
+                <p className="text-[11px] text-forest-200 leading-relaxed">
+                  100% Offline in rice fields. Runs directly in your phone browser (WASM/WebGL). Zero cloud memory crashes.
+                </p>
+              </div>
+            </button>
+
+            {/* 2. Cloud Server (Render) */}
+            <button
+              type="button"
+              onClick={() => setFormConfig({ ...formConfig, aiEngineMode: 'CLOUD_RENDER' })}
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                formConfig.aiEngineMode === 'CLOUD_RENDER'
+                  ? 'bg-emerald-900/70 border-emerald-400 ring-2 ring-emerald-400/40 text-white'
+                  : 'bg-forest-900/60 border-forest-800 text-forest-300 hover:bg-forest-900'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between font-bold text-xs mb-1">
+                  <span className="flex items-center gap-1.5 text-white">
+                    <Cloud className="w-4 h-4 text-solar-400" />
+                    <span>☁️ Cloud (Render)</span>
+                  </span>
+                </div>
+                <p className="text-[11px] text-forest-200 leading-relaxed">
+                  Remote server. Requires constant internet; free tier is subject to Render 512MB RAM limits.
+                </p>
+              </div>
+            </button>
+
+            {/* 3. Local Farm PC */}
+            <button
+              type="button"
+              onClick={() => setFormConfig({ ...formConfig, aiEngineMode: 'LOCAL_PC', aiServerUrl: 'http://127.0.0.1:5000' })}
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                formConfig.aiEngineMode === 'LOCAL_PC'
+                  ? 'bg-emerald-900/70 border-emerald-400 ring-2 ring-emerald-400/40 text-white'
+                  : 'bg-forest-900/60 border-forest-800 text-forest-300 hover:bg-forest-900'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between font-bold text-xs mb-1">
+                  <span className="flex items-center gap-1.5 text-white">
+                    <Cpu className="w-4 h-4 text-emerald-400" />
+                    <span>💻 Local Farm PC</span>
+                  </span>
+                </div>
+                <p className="text-[11px] text-forest-200 leading-relaxed">
+                  Runs ai_server.py on farmer's laptop/PC on the farm Wi-Fi with dedicated CPU/GPU performance.
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+
         {/* Detection Sensitivity Slider */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">

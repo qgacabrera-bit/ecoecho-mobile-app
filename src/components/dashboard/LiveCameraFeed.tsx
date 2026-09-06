@@ -45,9 +45,9 @@ export const LiveCameraFeed: React.FC = () => {
     ? telemetry.latestCameraFrame
     : (streamSource === 'ai' ? aiAnnotatedStreamUrl : esp32DirectStreamUrl);
 
-  // Real-time Client Canvas Frame Extractor -> Online AI Backend
+  // Real-time Client Canvas Frame Extractor -> On-Device or Cloud AI Backend
   useEffect(() => {
-    if (streamSource !== 'direct' || streamError || !config.aiServerUrl) return;
+    if (streamSource !== 'direct' || streamError) return;
 
     let isProcessing = false;
     const interval = setInterval(() => {
@@ -65,6 +65,19 @@ export const LiveCameraFeed: React.FC = () => {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         isProcessing = true;
 
+        // If on-device phone inference, pass canvas directly for instant zero-latency processing
+        if (config.aiEngineMode === 'ON_DEVICE' || !config.aiEngineMode) {
+          detectFrameFromAI(canvas, config).then((res) => {
+            if (res.success && res.detections) {
+              pushLiveDetections(res.detections);
+            }
+          }).catch(() => {}).finally(() => {
+            isProcessing = false;
+          });
+          return;
+        }
+
+        // For remote cloud server, encode to JPEG blob and POST
         canvas.toBlob(async (blob) => {
           if (!blob) {
             isProcessing = false;
@@ -82,10 +95,9 @@ export const LiveCameraFeed: React.FC = () => {
           }
         }, 'image/jpeg', 0.80);
       } catch {
-        // Tainted canvas or cross-origin restriction
         isProcessing = false;
       }
-    }, 1500);
+    }, 1200);
 
     return () => clearInterval(interval);
   }, [streamSource, streamError, config, pushLiveDetections]);
@@ -292,8 +304,11 @@ export const LiveCameraFeed: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <span className="flex items-center gap-1.5 text-emerald-400 font-bold font-mono">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            AI Brain: {telemetry.aiServerOnline ? 'Online' : 'Standby'}
-            {telemetry.lastInferenceMs ? ` (${telemetry.lastInferenceMs}ms)` : ''}
+            {config.aiEngineMode === 'ON_DEVICE' || !config.aiEngineMode ? (
+              <span>📱 Phone On-Device Engine (100% Offline)</span>
+            ) : (
+              <span>AI Brain: {telemetry.aiServerOnline ? 'Online' : 'Standby'} {telemetry.lastInferenceMs ? `(${telemetry.lastInferenceMs}ms)` : ''}</span>
+            )}
           </span>
           <span className="text-forest-700">|</span>
           <span className="text-forest-300 font-mono">
@@ -301,7 +316,7 @@ export const LiveCameraFeed: React.FC = () => {
           </span>
           <span className="text-forest-700">|</span>
           <span className="text-forest-400 font-mono text-[11px]">
-            Source: {streamSource === 'ai' ? 'Server Annotated' : 'ESP32 Local Direct'}
+            Feed: {streamSource === 'ai' ? 'Server Annotated' : 'ESP32 Local Direct'}
           </span>
         </div>
 
