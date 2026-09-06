@@ -117,19 +117,29 @@ export const SettingsPage: React.FC = () => {
       {/* 2. Main Calibration Controls Form */}
       <form onSubmit={handleSave} className="bg-white/90 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-app-border shadow-xs space-y-5">
         
-        {/* Detection Sensitivity Slider */}
+        {/* Pest Detection Sensitivity Slider */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
             <div>
               <h4 className="text-xs font-bold uppercase tracking-wider text-forest-900">
-                AI Detection Sensitivity (Confidence Limit)
+                Pest Detection Alert Sensitivity
               </h4>
               <p className="text-xs text-forest-600">
-                Filters out background field movement. 70% is the optimal balance for precision.
+                Controls how strictly the camera confirms bugs before sounding alarms. Balanced (70%) ignores swaying leaves and wind.
               </p>
             </div>
-            <span className="font-mono text-xs font-black bg-solar-100 text-solar-950 border border-solar-300 px-3 py-1 rounded-xl">
-              {(formConfig.sensitivityThreshold * 100).toFixed(0)}% Confidence
+            <span className={`self-start sm:self-auto font-mono text-xs font-black border px-3 py-1 rounded-xl shrink-0 ${
+              formConfig.sensitivityThreshold >= 0.85
+                ? 'bg-amber-100 text-amber-950 border-amber-300'
+                : formConfig.sensitivityThreshold <= 0.45
+                ? 'bg-blue-100 text-blue-950 border-blue-300'
+                : 'bg-solar-100 text-solar-950 border-solar-300'
+            }`}>
+              {formConfig.sensitivityThreshold <= 0.45
+                ? `High Sensitivity (${(formConfig.sensitivityThreshold * 100).toFixed(0)}%)`
+                : formConfig.sensitivityThreshold >= 0.85
+                ? `Strict Confirmation (${(formConfig.sensitivityThreshold * 100).toFixed(0)}%)`
+                : `Balanced Guard (${(formConfig.sensitivityThreshold * 100).toFixed(0)}%)`}
             </span>
           </div>
 
@@ -142,23 +152,28 @@ export const SettingsPage: React.FC = () => {
             onChange={(e) => setFormConfig({ ...formConfig, sensitivityThreshold: parseFloat(e.target.value) })}
             className="w-full accent-forest-700 cursor-pointer"
           />
-          <div className="flex justify-between text-[11px] text-forest-500 font-mono">
-            <span>30% (More Sensitive)</span>
-            <span className="font-bold text-forest-900">70% (Recommended)</span>
-            <span>95% (Strict)</span>
+          <div className="flex justify-between text-[11px] text-forest-600 font-medium">
+            <span>Catches Subtle Movement (30%)</span>
+            <span className="font-black text-forest-950">Balanced (Recommended 70%)</span>
+            <span>Confirmed Pests Only (95%)</span>
           </div>
         </div>
 
         {/* Ultrasonic Frequency Sliders */}
-        <div className="border-t border-forest-100 pt-4 space-y-4">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-forest-900">
-            Acoustic Deterrence Frequencies (kHz)
-          </h4>
+        <div className="border-t border-forest-100 pt-4 space-y-3">
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-forest-900">
+              Ultrasonic Sound Shield Range (kHz)
+            </h4>
+            <p className="text-xs text-forest-600 mt-0.5">
+              Eco-friendly bio-acoustic waves (20–45 kHz) repel rice pests safely without chemicals, noise disturbance, or harming crops.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div className="flex justify-between text-xs font-bold mb-1">
-                <span className="text-forest-900">Minimum Frequency</span>
+                <span className="text-forest-900">Starting Sound Wave</span>
                 <span className="font-mono text-forest-700">{formConfig.sweepMinKhz.toFixed(1)} kHz</span>
               </div>
               <input
@@ -171,14 +186,14 @@ export const SettingsPage: React.FC = () => {
                 className="w-full accent-forest-700 cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-forest-500 font-mono mt-0.5">
-                <span>20.0 kHz (Lower Limit)</span>
+                <span>20.0 kHz (Minimum)</span>
                 <span>30.0 kHz</span>
               </div>
             </div>
 
             <div>
               <div className="flex justify-between text-xs font-bold mb-1">
-                <span className="text-forest-900">Maximum Frequency</span>
+                <span className="text-forest-900">Peak Deterrent Wave</span>
                 <span className="font-mono text-solar-700">{formConfig.sweepMaxKhz.toFixed(1)} kHz</span>
               </div>
               <input
@@ -192,7 +207,7 @@ export const SettingsPage: React.FC = () => {
               />
               <div className="flex justify-between text-[10px] text-forest-500 font-mono mt-0.5">
                 <span>35.0 kHz</span>
-                <span>45.0 kHz (Upper Limit)</span>
+                <span>45.0 kHz (Maximum)</span>
               </div>
             </div>
           </div>
