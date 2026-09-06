@@ -86,9 +86,9 @@ def normalize_esp32_url(raw_url: str) -> str:
     return "http://" + url
 
 # Configuration & Defaults
-DEFAULT_CAMERA_SOURCE = os.environ.get("CAMERA_SOURCE", "esp32").lower()  # 'esp32' or 'webcam'
+DEFAULT_CAMERA_SOURCE = os.environ.get("CAMERA_SOURCE", "api").lower()  # 'api', 'esp32', or 'webcam'
 DEFAULT_WEBCAM_INDEX = int(os.environ.get("WEBCAM_INDEX", 0))
-DEFAULT_ESP32_URL = normalize_esp32_url(os.environ.get("ESP32_CAM_URL", "http://192.168.4.1/capture"))
+DEFAULT_ESP32_URL = normalize_esp32_url(os.environ.get("ESP32_CAM_URL", "http://192.168.254.106/capture"))
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "best.pt")
 CONFIDENCE_THRESHOLD = float(os.environ.get("CONFIDENCE_THRESHOLD", 0.70))  # 70% Confidence default
 IMAGE_SIZE = int(os.environ.get("IMAGE_SIZE", 640))
@@ -277,6 +277,10 @@ def camera_worker():
             continue
 
         frame = None
+
+        if source in ("api", "push"):
+            time.sleep(0.05)
+            continue
 
         if source == "esp32":
             if active_cap is not None:
