@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDevice } from '../context/DeviceContext';
 import { 
   Wifi, 
@@ -8,24 +8,15 @@ import {
   Square, 
   RotateCcw, 
   Smartphone, 
-  ShieldCheck,
-  Activity,
-  Bug,
-  ChevronDown,
-  ChevronUp,
-  Radio,
-  Volume2,
-  Cloud,
-  Cpu
+  Volume2
 } from 'lucide-react';
 import { AcousticWaveformVisualizer } from '../components/layout/AcousticWaveformVisualizer';
-import { checkAIServerStatus, updateAIServerConfig, cleanHostOrIp } from '../services/api';
+import { cleanHostOrIp } from '../services/api';
 import { DeviceConfig } from '../types';
 
 export const SettingsPage: React.FC = () => {
   const { 
     config, 
-    telemetry,
     updateConfig, 
     isTestingSweep, 
     triggerTestSweep, 
@@ -38,10 +29,10 @@ export const SettingsPage: React.FC = () => {
   const [formConfig, setFormConfig] = useState<DeviceConfig>({
     esp32Ip: cleanHostOrIp(config.esp32Ip) || '192.168.254.106',
     wsUrl: config.wsUrl || 'ws://192.168.254.106:81',
-    mqttBrokerUrl: config.mqttBrokerUrl || 'wss://broker.hivemq.com:8884/mqtt',
+    mqttBrokerUrl: '',
     deviceId: config.deviceId || 'ECOECHO-01',
-    aiApiEndpoint: config.aiApiEndpoint || 'https://ecoecho-backend-1a6d.onrender.com/api/detect',
-    aiServerUrl: config.aiServerUrl || 'https://ecoecho-backend-1a6d.onrender.com',
+    aiApiEndpoint: '',
+    aiServerUrl: '',
     cameraSource: 'ESP32',
     webcamIndex: 0,
     useSimulatedHardware: config.useSimulatedHardware,
@@ -51,49 +42,25 @@ export const SettingsPage: React.FC = () => {
     dynamicBurstDurationMs: config.dynamicBurstDurationMs,
     sensitivityThreshold: config.sensitivityThreshold ?? 0.70,
     soundAlarmEnabled: config.soundAlarmEnabled,
-    aiEngineMode: config.aiEngineMode || 'ON_DEVICE'
+    aiEngineMode: 'ON_DEVICE'
   });
 
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [resetMessage, setResetMessage] = useState<boolean>(false);
-  const [showAdvancedNetwork, setShowAdvancedNetwork] = useState<boolean>(true);
-  const [aiServerCheck, setAiServerCheck] = useState<{
-    tested: boolean;
-    online: boolean;
-  }>({ tested: false, online: false });
 
-  const testAIServer = async () => {
-    const res = await checkAIServerStatus(formConfig.aiServerUrl);
-    setAiServerCheck({
-      tested: true,
-      online: res.online
-    });
-  };
-
-  useEffect(() => {
-    testAIServer();
-  }, [formConfig.aiServerUrl]);
-
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanIp = cleanHostOrIp(formConfig.esp32Ip);
-    const sanitizedConfig = {
+    const cleanIp = cleanHostOrIp(formConfig.esp32Ip) || '192.168.254.106';
+    const sanitizedConfig: DeviceConfig = {
       ...formConfig,
       esp32Ip: cleanIp,
-      wsUrl: `ws://${cleanIp}:81`
+      wsUrl: `ws://${cleanIp}:81`,
+      aiEngineMode: 'ON_DEVICE'
     };
     setFormConfig(sanitizedConfig);
     updateConfig(sanitizedConfig);
 
-    await updateAIServerConfig(sanitizedConfig, {
-      cameraSource: 'esp32',
-      confidenceThreshold: sanitizedConfig.sensitivityThreshold,
-      sensitivityThreshold: sanitizedConfig.sensitivityThreshold,
-      esp32Url: `http://${cleanIp}/capture`
-    });
-
     setIsSaved(true);
-    testAIServer();
     setTimeout(() => setIsSaved(false), 3000);
   };
 
@@ -101,14 +68,14 @@ export const SettingsPage: React.FC = () => {
     const defaults: DeviceConfig = {
       esp32Ip: '192.168.254.106',
       wsUrl: 'ws://192.168.254.106:81',
-      mqttBrokerUrl: 'wss://broker.hivemq.com:8884/mqtt',
+      mqttBrokerUrl: '',
       deviceId: 'ECOECHO-01',
-      aiApiEndpoint: 'https://ecoecho-backend-1a6d.onrender.com/api/detect',
-      aiServerUrl: 'https://ecoecho-backend-1a6d.onrender.com',
+      aiApiEndpoint: '',
+      aiServerUrl: '',
       cameraSource: 'ESP32',
       webcamIndex: 0,
       useSimulatedHardware: true,
-      sweepMinKhz: 30.0,
+      sweepMinKhz: 20.0,
       sweepMaxKhz: 45.0,
       sweepCycleSeconds: 4,
       dynamicBurstDurationMs: 2500,
@@ -125,7 +92,7 @@ export const SettingsPage: React.FC = () => {
   return (
     <div className="space-y-5 animate-in fade-in duration-300 pb-6 max-w-5xl mx-auto">
       
-      {/* 1. Header Card with AI Status */}
+      {/* 1. Header Card */}
       <div className="bg-white/95 p-5 sm:p-6 rounded-3xl border border-app-border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
@@ -135,125 +102,21 @@ export const SettingsPage: React.FC = () => {
             </span>
           </div>
           <p className="text-xs text-forest-900 font-medium mt-1">
-            Calibrate detection sensitivity, acoustic frequencies, and hardware connection.
+            Calibrate detection sensitivity, acoustic frequencies, and ESP32 hardware connection.
           </p>
         </div>
 
-        {/* AI Server Status Ping */}
         <div className="flex items-center space-x-2 shrink-0">
-          <button
-            onClick={testAIServer}
-            className="bg-forest-100 hover:bg-forest-200 text-forest-950 text-xs font-black px-3.5 py-2 rounded-xl border border-forest-300 flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <Activity className="w-4 h-4 text-forest-900" />
-            <span>Check AI Status</span>
-          </button>
-          <span className={`text-xs font-black px-3 py-2 rounded-xl flex items-center gap-1.5 border ${
-            aiServerCheck.online ? 'bg-emerald-100 text-emerald-950 border-emerald-300' : 'bg-solar-100 text-solar-950 border-solar-300'
-          }`}>
-            <span className={`w-2 h-2 rounded-full ${aiServerCheck.online ? 'bg-emerald-600 animate-pulse' : 'bg-solar-500'}`} />
-            <span>{aiServerCheck.online ? 'AI Brain Online' : 'AI Standby'}</span>
+          <span className="text-xs font-black px-3 py-2 rounded-xl flex items-center gap-1.5 border bg-emerald-100 text-emerald-950 border-emerald-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+            <span>📱 On-Device AI Active</span>
           </span>
         </div>
       </div>
 
-      {/* 3. Main Calibration Controls Form */}
+      {/* 2. Main Calibration Controls Form */}
       <form onSubmit={handleSave} className="bg-white/90 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-app-border shadow-xs space-y-5">
         
-        {/* AI Engine Execution Location (Phone On-Device vs Cloud vs Local PC) */}
-        <div className="space-y-3 bg-forest-950 text-white p-4 sm:p-5 rounded-2xl border border-forest-800">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Smartphone className="w-5 h-5 text-solar-400" />
-              <div>
-                <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <span>AI Model Execution Mode</span>
-                  <span className="bg-solar-500 text-forest-950 text-[10px] font-black px-2 py-0.5 rounded-md uppercase">
-                    100% Offline Ready
-                  </span>
-                </h4>
-                <p className="text-xs text-forest-300">
-                  Choose where YOLO (best.onnx / best.pt) runs to identify the 6 rice pests.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-            {/* 1. On-Device Phone (Recommended) */}
-            <button
-              type="button"
-              onClick={() => setFormConfig({ ...formConfig, aiEngineMode: 'ON_DEVICE' })}
-              className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                formConfig.aiEngineMode === 'ON_DEVICE' || !formConfig.aiEngineMode
-                  ? 'bg-emerald-900/70 border-emerald-400 ring-2 ring-emerald-400/40 text-white'
-                  : 'bg-forest-900/60 border-forest-800 text-forest-300 hover:bg-forest-900'
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between font-bold text-xs mb-1">
-                  <span className="flex items-center gap-1.5 text-white">
-                    <Smartphone className="w-4 h-4 text-emerald-400" />
-                    <span>📱 Phone On-Device</span>
-                  </span>
-                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold">
-                    Recommended
-                  </span>
-                </div>
-                <p className="text-[11px] text-forest-200 leading-relaxed">
-                  100% Offline in rice fields. Runs directly in your phone browser (WASM/WebGL). Zero cloud memory crashes.
-                </p>
-              </div>
-            </button>
-
-            {/* 2. Cloud Server (Render) */}
-            <button
-              type="button"
-              onClick={() => setFormConfig({ ...formConfig, aiEngineMode: 'CLOUD_RENDER' })}
-              className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                formConfig.aiEngineMode === 'CLOUD_RENDER'
-                  ? 'bg-emerald-900/70 border-emerald-400 ring-2 ring-emerald-400/40 text-white'
-                  : 'bg-forest-900/60 border-forest-800 text-forest-300 hover:bg-forest-900'
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between font-bold text-xs mb-1">
-                  <span className="flex items-center gap-1.5 text-white">
-                    <Cloud className="w-4 h-4 text-solar-400" />
-                    <span>☁️ Cloud (Render)</span>
-                  </span>
-                </div>
-                <p className="text-[11px] text-forest-200 leading-relaxed">
-                  Remote server. Requires constant internet; free tier is subject to Render 512MB RAM limits.
-                </p>
-              </div>
-            </button>
-
-            {/* 3. Local Farm PC */}
-            <button
-              type="button"
-              onClick={() => setFormConfig({ ...formConfig, aiEngineMode: 'LOCAL_PC', aiServerUrl: 'http://127.0.0.1:5000' })}
-              className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                formConfig.aiEngineMode === 'LOCAL_PC'
-                  ? 'bg-emerald-900/70 border-emerald-400 ring-2 ring-emerald-400/40 text-white'
-                  : 'bg-forest-900/60 border-forest-800 text-forest-300 hover:bg-forest-900'
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between font-bold text-xs mb-1">
-                  <span className="flex items-center gap-1.5 text-white">
-                    <Cpu className="w-4 h-4 text-emerald-400" />
-                    <span>💻 Local Farm PC</span>
-                  </span>
-                </div>
-                <p className="text-[11px] text-forest-200 leading-relaxed">
-                  Runs ai_server.py on farmer's laptop/PC on the farm Wi-Fi with dedicated CPU/GPU performance.
-                </p>
-              </div>
-            </button>
-          </div>
-        </div>
-
         {/* Detection Sensitivity Slider */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -335,162 +198,31 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Local Network & Hardware Pairing Section */}
+        {/* ESP32 Hardware Connection Section */}
         <div className="bg-forest-50/80 border border-forest-200 rounded-2xl p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Wifi className="w-4 h-4 text-forest-700" />
-              <h4 className="text-xs font-bold uppercase tracking-wider text-forest-900">
-                Local Hardware & Online AI Brain Connection
-              </h4>
-            </div>
-            <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
-              aiServerCheck.online 
-                ? 'bg-emerald-100 text-emerald-950 border-emerald-300' 
-                : 'bg-solar-100 text-solar-950 border-solar-300'
-            }`}>
-              {aiServerCheck.online ? '🟢 AI Brain Connected' : '⚪ AI Brain Standby'}
-            </span>
+          <div className="flex items-center space-x-2">
+            <Wifi className="w-4 h-4 text-forest-700" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-forest-900">
+              ESP32 Field Station Connection
+            </h4>
           </div>
           <p className="text-xs text-forest-600">
-            Connect to your ESP32-CAM on your local Wi-Fi / Hotspot while leveraging the online AI Vision backend for rice pest identification.
+            Enter the local Wi-Fi or Hotspot IP address of your ESP32-CAM device.
           </p>
 
-          {/* Quick Preset Buttons */}
-          <div className="flex flex-wrap gap-2 pt-1">
-            <span className="text-[11px] font-bold text-forest-800 self-center">Presets:</span>
-            <button
-              type="button"
-              onClick={() => setFormConfig({ 
-                ...formConfig, 
-                aiServerUrl: 'https://ecoecho-backend-1a6d.onrender.com',
-                aiApiEndpoint: 'https://ecoecho-backend-1a6d.onrender.com/api/detect'
-              })}
-              className="text-[11px] font-bold px-2.5 py-1 bg-white hover:bg-forest-100 text-forest-900 rounded-lg border border-forest-200 transition-colors cursor-pointer"
-            >
-              ☁️ Cloud AI (Render)
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormConfig({ 
-                ...formConfig, 
-                aiServerUrl: 'http://127.0.0.1:5000',
-                aiApiEndpoint: 'http://127.0.0.1:5000/api/detect'
-              })}
-              className="text-[11px] font-bold px-2.5 py-1 bg-white hover:bg-forest-100 text-forest-900 rounded-lg border border-forest-200 transition-colors cursor-pointer"
-            >
-              💻 Local AI (127.0.0.1:5000)
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormConfig({ ...formConfig, esp32Ip: '192.168.254.106' })}
-              className="text-[11px] font-bold px-2.5 py-1 bg-white hover:bg-forest-100 text-forest-900 rounded-lg border border-forest-200 transition-colors cursor-pointer"
-            >
-              📡 Wi-Fi ESP32 (192.168.254.106)
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormConfig({ ...formConfig, esp32Ip: '192.168.4.1' })}
-              className="text-[11px] font-bold px-2.5 py-1 bg-white hover:bg-forest-100 text-forest-900 rounded-lg border border-forest-200 transition-colors cursor-pointer"
-            >
-              📱 ESP32 AP (192.168.4.1)
-            </button>
+          <div>
+            <label className="block text-xs font-bold text-forest-900 mb-1">
+              ESP32 Field Station IP Address
+            </label>
+            <input
+              type="text"
+              required
+              value={formConfig.esp32Ip}
+              onChange={(e) => setFormConfig({ ...formConfig, esp32Ip: e.target.value })}
+              placeholder="e.g. 192.168.254.106"
+              className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
+            />
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-bold text-forest-900">
-                  ESP32 Field Station Local IP
-                </label>
-                <a
-                  href={`http://${formConfig.esp32Ip}/capture`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[10px] text-forest-600 hover:text-forest-900 underline font-semibold"
-                >
-                  Test /capture
-                </a>
-              </div>
-              <input
-                type="text"
-                required
-                value={formConfig.esp32Ip}
-                onChange={(e) => setFormConfig({ ...formConfig, esp32Ip: e.target.value })}
-                placeholder="e.g. 192.168.4.1"
-                className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-bold text-forest-900">
-                  Local AI Server URL
-                </label>
-                <a
-                  href={`${formConfig.aiServerUrl}/api/status`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[10px] text-forest-600 hover:text-forest-900 underline font-semibold"
-                >
-                  Test /api/status
-                </a>
-              </div>
-              <input
-                type="text"
-                required
-                value={formConfig.aiServerUrl}
-                onChange={(e) => setFormConfig({ ...formConfig, aiServerUrl: e.target.value })}
-                placeholder="http://127.0.0.1:5000"
-                className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Optional Cloud MQTT Device Pairing Section */}
-        <div className="border border-forest-100 rounded-2xl p-4 bg-forest-50/40">
-          <button
-            type="button"
-            onClick={() => setShowAdvancedNetwork(!showAdvancedNetwork)}
-            className="w-full flex items-center justify-between text-xs font-bold text-forest-900 cursor-pointer"
-          >
-            <span className="flex items-center space-x-2">
-              <Cloud className="w-4 h-4 text-forest-600" />
-              <span>Optional Cloud MQTT Stream Configuration</span>
-            </span>
-            {showAdvancedNetwork ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-
-          {showAdvancedNetwork && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 animate-in fade-in duration-200">
-              <div>
-                <label className="block text-[11px] font-bold text-forest-900 mb-1">
-                  Device Serial Number / ID
-                </label>
-                <input
-                  type="text"
-                  value={formConfig.deviceId}
-                  onChange={(e) => setFormConfig({ ...formConfig, deviceId: e.target.value })}
-                  placeholder="e.g. ECOECHO-01"
-                  className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono font-bold text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-forest-900 mb-1">
-                  Cloud MQTT Broker URL
-                </label>
-                <input
-                  type="text"
-                  value={formConfig.mqttBrokerUrl}
-                  onChange={(e) => setFormConfig({ ...formConfig, mqttBrokerUrl: e.target.value })}
-                  placeholder="wss://broker.hivemq.com:8884/mqtt"
-                  className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
-                />
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Buttons */}
@@ -519,9 +251,16 @@ export const SettingsPage: React.FC = () => {
             <span>Settings successfully applied to field station!</span>
           </div>
         )}
+
+        {resetMessage && (
+          <div className="p-3 bg-solar-100 border border-solar-300 text-solar-900 text-xs font-bold rounded-xl text-center flex items-center justify-center gap-2 animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 text-solar-700" />
+            <span>Configuration reset to factory defaults!</span>
+          </div>
+        )}
       </form>
 
-      {/* 4. Safe Sound Test Tool */}
+      {/* 3. Safe Sound Test Tool */}
       <div className="bg-gradient-to-br from-forest-950 via-forest-900 to-forest-950 text-white p-5 sm:p-6 rounded-3xl border border-forest-800 shadow-lg space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -560,7 +299,7 @@ export const SettingsPage: React.FC = () => {
         <AcousticWaveformVisualizer showDetails={false} />
       </div>
 
-      {/* 5. Mobile App Install Card */}
+      {/* 4. Mobile App Install Card */}
       {!isInstalled && (
         <div className="bg-white/90 backdrop-blur-md p-5 rounded-3xl border border-app-border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center space-x-3">
