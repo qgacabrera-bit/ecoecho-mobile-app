@@ -533,12 +533,13 @@ def update_config():
 
 
 if __name__ == "__main__":
+    env_port = int(os.environ.get("PORT", 5000))
     parser = argparse.ArgumentParser(description="EcoEcho AI Vision Server (best.pt)")
     parser.add_argument("--esp32", type=str, default=None, help="ESP32-CAM URL or IP address (e.g. 192.168.4.1 or http://192.168.1.100/capture)")
     parser.add_argument("--webcam", action="store_true", help="Use local webcam instead of ESP32-CAM")
     parser.add_argument("--webcam-index", type=int, default=0, help="Webcam device index (default: 0)")
     parser.add_argument("--conf", type=float, default=0.70, help="Confidence threshold (default: 0.70)")
-    parser.add_argument("--port", type=int, default=5000, help="Port to run AI server on (default: 5000)")
+    parser.add_argument("--port", type=int, default=None, help="Port to run AI server on (default: PORT env or 5000)")
     parser.add_argument("--ngrok", action="store_true", help="Start public Ngrok tunnel")
     parser.add_argument("--token", type=str, default=None, help="Ngrok authtoken")
     
@@ -554,7 +555,7 @@ if __name__ == "__main__":
     if args.conf:
         state["confidence_threshold"] = args.conf
 
-    port = args.port
+    port = args.port if args.port is not None else env_port
     public_url = None
 
     if args.ngrok:
