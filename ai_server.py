@@ -71,7 +71,7 @@ IS_CLOUD_ENV = bool(os.environ.get("RENDER") or os.environ.get("PORT"))
 def normalize_esp32_url(raw_url: str) -> str:
     """Normalizes an IP address or URL into a valid ESP32 capture endpoint."""
     if not raw_url:
-        return "http://192.168.4.1/capture"
+        return "http://192.168.254.106/capture"
     url = str(raw_url).strip()
     # Strip all leading http:// or https:// (even if repeated)
     while url.lower().startswith("http://") or url.lower().startswith("https://"):
