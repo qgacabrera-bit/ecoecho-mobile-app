@@ -195,12 +195,14 @@ export async function detectFrameFromAI(
           source: 'on_device'
         };
       }
+      return { success: false, detections: [], inferenceMs: 0 };
     } catch (localErr) {
-      console.warn('[EcoEcho API] On-device inference error, attempting cloud fallback:', localErr);
+      console.warn('[EcoEcho API] On-device inference error:', localErr);
+      return { success: false, detections: [], inferenceMs: 0 };
     }
   }
 
-  // 2. Cloud Server Inference (Render or Local PC)
+  // 2. Cloud Server Inference (Render or Local PC) - Only when explicitly configured
   try {
     let response: Response;
     const url = `${config.aiServerUrl}/api/detect?conf=${conf}`;
@@ -266,15 +268,21 @@ export async function fetchDeviceStatus(config: DeviceConfig): Promise<DeviceTel
   let cameraConnected = false;
   let webcamConnected = false;
 
-  try {
-    const aiStatus = await checkAIServerStatus(config.aiServerUrl);
-    aiOnline = aiStatus.online;
-    fps = aiStatus.fps;
-    inferMs = aiStatus.lastInferenceMs;
-    cameraConnected = aiStatus.cameraConnected;
-    webcamConnected = aiStatus.webcamConnected;
-  } catch {
-    //
+  // If in ON_DEVICE mode, query local onnx model readiness without hitting cloud server
+  if (config.aiEngineMode === 'ON_DEVICE' || !config.aiEngineMode) {
+    aiOnline = isLocalModelReady();
+    fps = aiOnline ? 30 : 0;
+  } else {
+    try {
+      const aiStatus = await checkAIServerStatus(config.aiServerUrl);
+      aiOnline = aiStatus.online;
+      fps = aiStatus.fps;
+      inferMs = aiStatus.lastInferenceMs;
+      cameraConnected = aiStatus.cameraConnected;
+      webcamConnected = aiStatus.webcamConnected;
+    } catch {
+      //
+    }
   }
 
   if (!config.useSimulatedHardware) {

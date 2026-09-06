@@ -26,12 +26,13 @@ export const RICE_PEST_CLASSES: Record<number, { name: PestType; scientific: str
 let session: ort.InferenceSession | null = null;
 let isLoading = false;
 let loadError: string | null = null;
+let lastAttemptTime = 0;
 
-// Configure ONNX Runtime Web WASM paths (loads from CDN for reliable cross-platform bundling)
+// Configure ONNX Runtime Web WASM paths (loads exact 1.29.0 matching installed package)
 try {
   ort.env.wasm.numThreads = 1;
   ort.env.wasm.simd = true;
-  ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/';
+  ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.29.0/dist/';
 } catch (e) {
   console.warn('[Local YOLO] Error setting ONNX runtime environment:', e);
 }
@@ -42,6 +43,12 @@ try {
 export async function initLocalYoloModel(onProgress?: (msg: string) => void): Promise<boolean> {
   if (session) return true;
   if (isLoading) return false;
+  
+  // Prevent hammering the network if an attempt failed recently
+  if (Date.now() - lastAttemptTime < 8000) {
+    return false;
+  }
+  lastAttemptTime = Date.now();
 
   isLoading = true;
   loadError = null;
@@ -53,10 +60,15 @@ export async function initLocalYoloModel(onProgress?: (msg: string) => void): Pr
     const baseUrl = import.meta.env.BASE_URL || '/';
     const modelUrl = `${baseUrl.replace(/\/$/, '')}/models/best.onnx`;
 
-    console.log(`[Local YOLO] Fetching ONNX model from: ${modelUrl}`);
+    console.log(`[Local YOLO] Fetching ONNX model buffer from: ${modelUrl}`);
+    const resp = await fetch(modelUrl);
+    if (!resp.ok) {
+      throw new Error(`Failed to fetch model file: ${resp.status} ${resp.statusText}`);
+    }
+    const modelBuffer = await resp.arrayBuffer();
 
-    // Create session with WASM or WebGL backend
-    session = await ort.InferenceSession.create(modelUrl, {
+    // Create session with WASM backend
+    session = await ort.InferenceSession.create(modelBuffer, {
       executionProviders: ['wasm'],
       graphOptimizationLevel: 'all'
     });
