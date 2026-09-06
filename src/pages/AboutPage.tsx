@@ -26,25 +26,25 @@ export const AboutPage: React.FC = () => {
   const { isTestingSweep, triggerTestSweep, stopTestSweep, activeTestFrequency } = useDevice();
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 pb-6">
+    <div className="space-y-3.5 sm:space-y-5 animate-in fade-in duration-300 pb-6">
       
-      {/* Hero Banner */}
-      <div className="bg-gradient-to-br from-forest-950 via-forest-900 to-forest-950 text-white rounded-3xl p-6 sm:p-8 border border-forest-800 shadow-xl relative overflow-hidden">
-        <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center space-x-2 bg-forest-800/80 border border-forest-600/50 px-3 py-1 rounded-full text-xs font-bold text-solar-400">
-            <Radio className="w-3.5 h-3.5" />
-            <span>Smart Crop Defense for Rice Fields</span>
+      {/* Hero Banner - Compact & Mobile-First */}
+      <div className="bg-gradient-to-br from-forest-950 via-forest-900 to-forest-950 text-white rounded-2xl p-4 sm:p-6 border border-forest-800 shadow-md relative overflow-hidden">
+        <div className="relative z-10 max-w-2xl space-y-2">
+          <div className="inline-flex items-center space-x-1.5 bg-forest-800/80 border border-forest-600/50 px-2.5 py-0.5 rounded-full text-[11px] font-bold text-solar-400">
+            <Radio className="w-3 h-3" />
+            <span>Crop Defense for Rice Fields</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+          <h2 className="text-lg sm:text-2xl font-black tracking-tight leading-snug">
             Protecting Rice Crops Through Sound, Not Poison.
           </h2>
-          <p className="text-sm text-forest-200/90 leading-relaxed font-medium">
-            EcoEcho is a solar-powered field station that uses high-pitch sound and smart cameras to stop destructive rice insects from eating your crop — without spraying expensive, toxic chemicals.
+          <p className="text-xs sm:text-sm text-forest-200/90 leading-relaxed font-medium">
+            EcoEcho is a solar-powered field station that uses high-pitch sound and smart cameras to stop destructive rice insects — without spraying expensive, toxic chemicals.
           </p>
         </div>
 
         {/* Ambient background decoration */}
-        <div className="absolute right-0 bottom-0 w-80 h-80 bg-forest-700/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute right-0 bottom-0 w-60 h-60 bg-forest-700/20 rounded-full blur-3xl pointer-events-none" />
       </div>
 
       {/* Interactive Pest Threat Intelligence & Biology Center (The Problem & Threats) */}
@@ -54,26 +54,26 @@ export const AboutPage: React.FC = () => {
       <HardwareExplodedView />
 
       {/* Acoustic Waveform Demonstration Box (Simplified Plain Language) */}
-      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-app-border shadow-sm space-y-4">
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-app-border shadow-xs space-y-3">
         <div>
           <div className="flex items-center space-x-2">
-            <h3 className="text-base font-black text-forest-950">
+            <h3 className="text-sm sm:text-base font-black text-forest-950">
               Smart Pitch-Shifting Sound Shield
             </h3>
-            <span className="bg-emerald-100 text-emerald-900 text-xs font-black px-2.5 py-0.5 rounded-full border border-emerald-300">
+            <span className="bg-emerald-100 text-emerald-900 text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full border border-emerald-300">
               20.0 – 45.0 kHz
             </span>
           </div>
-          <p className="text-xs text-forest-900 font-medium mt-1">
+          <p className="text-[11px] sm:text-xs text-forest-800 font-medium mt-0.5">
             The sound automatically shifts pitch continuously so insects cannot adapt or get used to it.
           </p>
         </div>
 
-        <AcousticWaveformVisualizer height={64} showDetails={true} />
+        <AcousticWaveformVisualizer height={56} showDetails={true} />
       </div>
 
       {/* High-Contrast Ecosystem Safety Grid */}
-      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-app-border shadow-sm space-y-4">
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-app-border shadow-xs space-y-3">
         <div>
           <div className="flex items-center space-x-2 mb-2">
             <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-900">

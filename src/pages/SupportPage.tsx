@@ -88,83 +88,81 @@ export const SupportPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 pb-6">
+    <div className="space-y-3.5 sm:space-y-5 animate-in fade-in duration-300 pb-6">
       
-      {/* Header Banner */}
-      <div className="bg-white p-5 sm:p-6 rounded-3xl border border-app-border shadow-sm space-y-1.5">
-        <div className="flex items-center space-x-2">
-          <h2 className="text-xl font-black text-forest-950">Field Support & Co-op Dispatch</h2>
-          <span className="bg-forest-100 text-forest-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
-            24/7 Technician Desk
-          </span>
+      {/* Header Banner - Compact & Mobile-First */}
+      <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-app-border shadow-xs flex items-center justify-between gap-3">
+        <div>
+          <div className="flex items-center space-x-2">
+            <h2 className="text-base sm:text-lg font-black text-forest-950">Field Support & Dispatch</h2>
+            <span className="bg-forest-100 text-forest-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              24/7 Desk
+            </span>
+          </div>
+          <p className="text-[11px] text-forest-700 font-medium mt-0.5">
+            Maintenance dispatch, bug reports, and local LGU assistance.
+          </p>
         </div>
-        <p className="text-xs text-forest-700/80">
-          Request hardware maintenance, report field pest anomalies, or connect directly with your local LGU Agricultural Office.
-        </p>
       </div>
 
-      {/* 3 Contact Cards (Instructions.md Dummy Contact Details) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4">
+      {/* 3 Compact Contact Quick-Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
         
         {/* Card 1: Local LGU Agricultural Office Hotline */}
-        <div className="bg-white p-4 sm:p-5 rounded-3xl border border-app-border shadow-sm flex items-start space-x-3.5 hover:border-forest-400 transition-colors">
-          <div className="w-11 h-11 rounded-2xl bg-forest-100 text-forest-800 flex items-center justify-center shrink-0">
-            <Building2 className="w-5 h-5" />
+        <div className="bg-white p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-app-border shadow-xs flex items-center space-x-3 hover:border-forest-400 transition-colors">
+          <div className="w-8 h-8 rounded-xl bg-forest-100 text-forest-800 flex items-center justify-center shrink-0">
+            <Building2 className="w-4 h-4" />
           </div>
-          <div className="space-y-1 min-w-0">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-forest-700">
-              LGU Agri Support Hotline
+          <div className="min-w-0 flex-1">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-forest-600">
+              LGU Agri Support
             </h3>
-            <p className="text-sm font-black text-forest-950 truncate">(044) 940-RICE (7423)</p>
-            <p className="text-[11px] text-forest-600 font-mono">Mobile: +63 917 832 6324</p>
-            <div className="text-[10px] text-emerald-700 font-bold pt-0.5 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Mon - Sat (7:00 AM - 6:00 PM)</span>
-            </div>
+            <a href="tel:0449407423" className="text-xs font-black text-forest-950 hover:underline block truncate">
+              (044) 940-RICE (7423)
+            </a>
+            <p className="text-[10px] text-forest-500 truncate">Mon–Sat (7 AM–6 PM)</p>
           </div>
         </div>
 
         {/* Card 2: Farmers' Cooperative Field Dispatch */}
-        <div className="bg-white p-4 sm:p-5 rounded-3xl border border-app-border shadow-sm flex items-start space-x-3.5 hover:border-emerald-400 transition-colors">
-          <div className="w-11 h-11 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
-            <Wrench className="w-5 h-5" />
+        <div className="bg-white p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-app-border shadow-xs flex items-center space-x-3 hover:border-emerald-400 transition-colors">
+          <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+            <Wrench className="w-4 h-4" />
           </div>
-          <div className="space-y-1 min-w-0">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-800">
-              Co-op Field Technician
+          <div className="min-w-0 flex-1">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+              Co-op Field Tech
             </h3>
-            <p className="text-sm font-black text-forest-950 truncate">+63 928 456 7890</p>
-            <p className="text-[11px] text-forest-600 truncate">dispatch@ecoecho-agri.ph</p>
-            <div className="text-[10px] text-forest-600 font-semibold pt-0.5">
-              Rapid Sector Maintenance Dispatch
-            </div>
+            <a href="tel:+639284567890" className="text-xs font-black text-forest-950 hover:underline block truncate">
+              +63 928 456 7890
+            </a>
+            <p className="text-[10px] text-forest-500 truncate">Rapid Sector Dispatch</p>
           </div>
         </div>
 
         {/* Card 3: EcoEcho Engineering Tech Support */}
-        <div className="bg-white p-4 sm:p-5 rounded-3xl border border-app-border shadow-sm flex items-start space-x-3.5 hover:border-solar-400 transition-colors">
-          <div className="w-11 h-11 rounded-2xl bg-solar-100 text-solar-800 flex items-center justify-center shrink-0">
-            <LifeBuoy className="w-5 h-5" />
+        <div className="bg-white p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-app-border shadow-xs flex items-center space-x-3 hover:border-solar-400 transition-colors">
+          <div className="w-8 h-8 rounded-xl bg-solar-100 text-solar-800 flex items-center justify-center shrink-0">
+            <LifeBuoy className="w-4 h-4" />
           </div>
-          <div className="space-y-1 min-w-0">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-solar-800">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-solar-800">
               Hardware & AI Desk
             </h3>
-            <p className="text-sm font-black text-forest-950 truncate">support@ecoecho.tech</p>
-            <p className="text-[11px] text-forest-600 font-mono">Toll-Free: 1-800-ECO-ECHO</p>
-            <div className="text-[10px] text-forest-600 font-semibold pt-0.5">
-              Firmware & Cloud Sync Assistance
-            </div>
+            <a href="mailto:support@ecoecho.tech" className="text-xs font-black text-forest-950 hover:underline block truncate">
+              support@ecoecho.tech
+            </a>
+            <p className="text-[10px] text-forest-500 truncate">1-800-ECO-ECHO</p>
           </div>
         </div>
 
       </div>
 
       {/* Main Support Form & Ticket Tracker Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-5">
         
         {/* Left 7 Cols: Maintenance & Bug Report Form */}
-        <div className="lg:col-span-7 bg-white p-5 sm:p-6 rounded-3xl border border-app-border shadow-sm space-y-4">
+        <div className="lg:col-span-7 bg-white p-4 sm:p-5 rounded-2xl border border-app-border shadow-xs space-y-3.5">
           <div>
             <h3 className="text-base font-black text-forest-950 flex items-center gap-2">
               <Send className="w-4 h-4 text-forest-700" />

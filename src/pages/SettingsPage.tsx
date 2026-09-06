@@ -90,32 +90,31 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-300 pb-6 max-w-5xl mx-auto">
+    <div className="space-y-3.5 sm:space-y-4 animate-in fade-in duration-300 pb-6 max-w-5xl mx-auto">
       
-      {/* 1. Header Card */}
-      <div className="bg-white/95 p-5 sm:p-6 rounded-3xl border border-app-border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+      {/* 1. Header Card - Compact & Clean */}
+      <div className="bg-white/95 p-3.5 sm:p-4 rounded-2xl border border-app-border shadow-xs flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <div className="flex items-center space-x-2">
-            <h2 className="text-xl sm:text-2xl font-black text-forest-950">Field Station & Protection Settings</h2>
-            <span className="bg-emerald-100 text-emerald-950 text-xs font-black px-2.5 py-0.5 rounded-full border border-emerald-300">
+            <h2 className="text-base sm:text-lg font-black text-forest-950 truncate">Field Station Settings</h2>
+            <span className="bg-emerald-100 text-emerald-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-emerald-300 shrink-0">
               Active Guard
             </span>
           </div>
-          <p className="text-xs text-forest-900 font-medium mt-1">
-            Calibrate detection sensitivity, acoustic frequencies, and ESP32 hardware connection.
+          <p className="text-[11px] text-forest-700 font-medium mt-0.5">
+            Calibrate detection sensitivity, sound waves, and field station IP.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 shrink-0">
-          <span className="text-xs font-black px-3 py-2 rounded-xl flex items-center gap-1.5 border bg-emerald-100 text-emerald-950 border-emerald-300">
-            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-            <span>📱 On-Device AI Active</span>
-          </span>
-        </div>
+        <span className="text-[11px] font-bold px-2.5 py-1 rounded-xl flex items-center gap-1.5 border bg-emerald-50 text-emerald-900 border-emerald-300 shrink-0">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+          <span className="hidden sm:inline">📱 On-Device AI Active</span>
+          <span className="sm:hidden">AI Active</span>
+        </span>
       </div>
 
       {/* 2. Main Calibration Controls Form */}
-      <form onSubmit={handleSave} className="bg-white/90 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-app-border shadow-xs space-y-5">
+      <form onSubmit={handleSave} className="bg-white/90 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-app-border shadow-xs space-y-4">
         
         {/* Pest Detection Sensitivity Slider */}
         <div className="space-y-2">
@@ -160,7 +159,7 @@ export const SettingsPage: React.FC = () => {
         </div>
 
         {/* Ultrasonic Frequency Sliders */}
-        <div className="border-t border-forest-100 pt-4 space-y-3">
+        <div className="border-t border-forest-100 pt-3.5 space-y-3">
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-forest-900">
               Ultrasonic Sound Shield Range (kHz)
@@ -170,7 +169,7 @@ export const SettingsPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <div className="flex justify-between text-xs font-bold mb-1">
                 <span className="text-forest-900">Starting Sound Wave</span>
@@ -214,14 +213,14 @@ export const SettingsPage: React.FC = () => {
         </div>
 
         {/* ESP32 Hardware Connection Section */}
-        <div className="bg-forest-50/80 border border-forest-200 rounded-2xl p-4 space-y-3">
+        <div className="bg-forest-50/80 border border-forest-200 rounded-xl p-3.5 space-y-2">
           <div className="flex items-center space-x-2">
             <Wifi className="w-4 h-4 text-forest-700" />
             <h4 className="text-xs font-bold uppercase tracking-wider text-forest-900">
               ESP32 Field Station Connection
             </h4>
           </div>
-          <p className="text-xs text-forest-600">
+          <p className="text-[11px] text-forest-600">
             Enter the local Wi-Fi or Hotspot IP address of your ESP32-CAM device.
           </p>
 
@@ -235,7 +234,7 @@ export const SettingsPage: React.FC = () => {
               value={formConfig.esp32Ip}
               onChange={(e) => setFormConfig({ ...formConfig, esp32Ip: e.target.value })}
               placeholder="e.g. 192.168.254.106"
-              className="w-full px-3.5 py-2.5 bg-white border border-forest-200 rounded-xl text-xs font-mono text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
+              className="w-full px-3 py-2 bg-white border border-forest-200 rounded-xl text-xs font-mono text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600"
             />
           </div>
         </div>

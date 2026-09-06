@@ -234,19 +234,19 @@ export const PestIntelligenceShowcase: React.FC = () => {
   };
 
   return (
-    <div className="bg-forest-950 text-white rounded-3xl border border-forest-800 shadow-2xl p-4 sm:p-7 space-y-4 relative overflow-hidden select-none">
+    <div className="bg-forest-950 text-white rounded-2xl border border-forest-800 shadow-xl p-3.5 sm:p-6 space-y-3 relative overflow-hidden select-none">
       
       {/* Background Ambient Glow */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-forest-800/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-solar-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Clean Minimal Header (Matching Hardware Architecture Style) */}
+      {/* Clean Minimal Header */}
       <div className="relative z-10 space-y-1">
-        <div className="flex items-center space-x-2 text-solar-400 font-mono text-xs font-black uppercase tracking-wider">
-          <Bug className="w-4 h-4 text-solar-400" />
+        <div className="flex items-center space-x-2 text-solar-400 font-mono text-[11px] sm:text-xs font-black uppercase tracking-wider">
+          <Bug className="w-3.5 h-3.5 text-solar-400" />
           <span>TARGET PEST PROFILES</span>
         </div>
-        <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
+        <h3 className="text-base sm:text-2xl font-black text-white tracking-tight">
           Target Rice Pests & Defense
         </h3>
       </div>
