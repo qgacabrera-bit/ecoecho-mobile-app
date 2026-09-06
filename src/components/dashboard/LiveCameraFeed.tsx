@@ -142,6 +142,17 @@ export const LiveCameraFeed: React.FC = () => {
     return () => clearInterval(interval);
   }, [streamError, config, pushLiveDetections]);
 
+  // Sync isFullscreen state when user exits via ESC key or browser gesture
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
     if (!document.fullscreenElement) {
@@ -168,11 +179,15 @@ export const LiveCameraFeed: React.FC = () => {
     <div 
       ref={containerRef}
       className={`bg-forest-950 rounded-3xl border border-forest-800 shadow-xl overflow-hidden flex flex-col transition-all relative ${
-        isFullscreen ? 'p-4 justify-between fixed inset-0 z-50 rounded-none' : ''
+        isFullscreen ? 'fixed inset-0 z-50 rounded-none border-none bg-black w-screen h-screen' : ''
       }`}
     >
-      {/* Top Header Bar - Clean & Minimal: Only Snapshot and Fullscreen */}
-      <div className="px-4 py-2.5 bg-forest-950/90 border-b border-forest-800 flex items-center justify-between gap-2 z-20">
+      {/* Top Header Bar - Floating overlay in fullscreen, compact bar in normal view */}
+      <div className={`px-4 py-2.5 flex items-center justify-between gap-2 z-30 transition-all ${
+        isFullscreen 
+          ? 'absolute top-0 inset-x-0 bg-gradient-to-b from-black/85 via-black/40 to-transparent' 
+          : 'bg-forest-950/90 border-b border-forest-800'
+      }`}>
         
         {/* Left: Target count only when pests are detected */}
         <div className="flex items-center space-x-2 min-h-[26px]">
@@ -189,7 +204,11 @@ export const LiveCameraFeed: React.FC = () => {
           {/* Screenshot Button */}
           <button
             onClick={handleCaptureSnapshot}
-            className="p-2 bg-forest-900/90 hover:bg-forest-800 text-forest-200 hover:text-white rounded-xl border border-forest-700/80 transition-all cursor-pointer shadow-xs active:scale-95"
+            className={`p-2 rounded-xl transition-all cursor-pointer shadow-xs active:scale-95 ${
+              isFullscreen 
+                ? 'bg-black/60 hover:bg-black/80 text-white border border-white/20 backdrop-blur-sm' 
+                : 'bg-forest-900/90 hover:bg-forest-800 text-forest-200 hover:text-white border border-forest-700/80'
+            }`}
             title="Take Photo Snapshot"
           >
             {isSnapshotCaptured ? (
@@ -202,8 +221,12 @@ export const LiveCameraFeed: React.FC = () => {
           {/* Fullscreen Button */}
           <button
             onClick={toggleFullscreen}
-            className="p-2 bg-forest-900/90 hover:bg-forest-800 text-forest-200 hover:text-white rounded-xl border border-forest-700/80 transition-all cursor-pointer shadow-xs active:scale-95"
-            title="Toggle Fullscreen"
+            className={`p-2 rounded-xl transition-all cursor-pointer shadow-xs active:scale-95 ${
+              isFullscreen 
+                ? 'bg-black/60 hover:bg-black/80 text-white border border-white/20 backdrop-blur-sm' 
+                : 'bg-forest-900/90 hover:bg-forest-800 text-forest-200 hover:text-white border border-forest-700/80'
+            }`}
+            title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
@@ -211,34 +234,44 @@ export const LiveCameraFeed: React.FC = () => {
       </div>
 
       {/* Live Video Viewport */}
-      <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] max-h-[520px] bg-forest-950 flex items-center justify-center overflow-hidden">
+      <div className={`relative w-full flex items-center justify-center overflow-hidden ${
+        isFullscreen 
+          ? 'flex-1 h-full w-full bg-black' 
+          : 'aspect-[16/10] sm:aspect-[16/9] max-h-[520px] bg-forest-950'
+      }`}>
         
         {!streamError ? (
           /* Live Stream from ESP32 */
           <div className="w-full h-full relative flex items-center justify-center">
             {streamSrc ? (
-              <img
-                ref={imgRef}
-                crossOrigin="anonymous"
-                src={streamSrc}
-                alt="ESP32 Live Field Camera"
-                className="w-full h-full object-cover select-none"
-                onLoad={() => setStreamError(false)}
-                onError={() => {
-                  // If direct port 81 failed, try port 80 stream before giving up
-                  if (streamSrc.includes(':81/stream')) {
-                    setStreamSrc(`${esp32Port80StreamUrl}?t=${Date.now()}`);
-                  } else {
-                    setStreamError(true);
-                  }
-                }}
-              />
+              <div className={`relative flex items-center justify-center ${
+                isFullscreen ? 'w-full h-full max-w-full max-h-full aspect-[4/3]' : 'w-full h-full'
+              }`}>
+                <img
+                  ref={imgRef}
+                  crossOrigin="anonymous"
+                  src={streamSrc}
+                  alt="ESP32 Live Field Camera"
+                  className={`w-full h-full select-none ${
+                    isFullscreen ? 'object-contain' : 'object-cover'
+                  }`}
+                  onLoad={() => setStreamError(false)}
+                  onError={() => {
+                    // If direct port 81 failed, try port 80 stream before giving up
+                    if (streamSrc.includes(':81/stream')) {
+                      setStreamSrc(`${esp32Port80StreamUrl}?t=${Date.now()}`);
+                    } else {
+                      setStreamError(true);
+                    }
+                  }}
+                />
+                <AIDetectionOverlay detections={detections} />
+              </div>
             ) : (
               <div className="flex items-center justify-center text-xs text-forest-400 font-mono">
                 Connecting to field camera...
               </div>
             )}
-            <AIDetectionOverlay detections={detections} />
           </div>
         ) : (
           /* Clean & Simple Farmer Troubleshooting - No Boxes */
@@ -275,7 +308,9 @@ export const LiveCameraFeed: React.FC = () => {
 
         {/* Real-time Target Indicator on top right of video */}
         {detections.length > 0 && (
-          <div className="absolute top-3 right-3 bg-amber-500 text-forest-950 font-black px-3 py-1.5 rounded-xl text-xs z-20 flex items-center gap-1.5 shadow-lg animate-pulse">
+          <div className={`absolute right-3 bg-amber-500 text-forest-950 font-black px-3 py-1.5 rounded-xl text-xs z-20 flex items-center gap-1.5 shadow-lg animate-pulse ${
+            isFullscreen ? 'top-16' : 'top-3'
+          }`}>
             <Target className="w-3.5 h-3.5" />
             <span>{detections[0].pestType}</span>
           </div>
