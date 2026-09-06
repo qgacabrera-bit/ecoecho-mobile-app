@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useDevice } from '../../context/DeviceContext';
 import { AIDetectionOverlay } from './AIDetectionOverlay';
+import { cleanHostOrIp } from '../../services/api';
 import { 
   Camera, 
   Maximize2, 
@@ -10,7 +11,9 @@ import {
   ShieldAlert, 
   Check, 
   Radio,
-  Wifi
+  Wifi,
+  Video,
+  Sparkles
 } from 'lucide-react';
 
 export const LiveCameraFeed: React.FC = () => {
@@ -23,16 +26,19 @@ export const LiveCameraFeed: React.FC = () => {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [streamError, setStreamError] = useState<boolean>(false);
   const [isSnapshotCaptured, setIsSnapshotCaptured] = useState<boolean>(false);
+  const [streamSource, setStreamSource] = useState<'direct' | 'ai'>('direct');
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const esp32DirectStreamUrl = `http://${config.esp32Ip}:81/stream`;
+  const cleanIp = cleanHostOrIp(config.esp32Ip) || '192.168.254.106';
+  const esp32DirectStreamUrl = `http://${cleanIp}:81/stream`;
+  const esp32Port80StreamUrl = `http://${cleanIp}/stream`;
   const aiAnnotatedStreamUrl = `${config.aiServerUrl}/api/annotated-stream`;
 
-  // Use Cloud Render stream if AI server configured, otherwise direct ESP32 or MQTT
+  // Choose stream: direct local ESP32 stream (0 latency) or AI annotated stream
   const currentStreamUrl = telemetry.latestCameraFrame 
     ? telemetry.latestCameraFrame
-    : (config.aiServerUrl ? aiAnnotatedStreamUrl : esp32DirectStreamUrl);
+    : (streamSource === 'ai' ? aiAnnotatedStreamUrl : esp32DirectStreamUrl);
 
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
@@ -84,9 +90,41 @@ export const LiveCameraFeed: React.FC = () => {
           )}
         </div>
 
-        {/* Right: Camera Action Controls */}
+        {/* Right: Camera Action Controls & Stream Switcher */}
         <div className="flex items-center space-x-2">
           
+          {/* Stream Selector Toggle */}
+          {!telemetry.latestCameraFrame && (
+            <div className="hidden sm:flex items-center bg-forest-900/80 p-0.5 rounded-xl border border-forest-700 text-[11px] font-bold">
+              <button
+                type="button"
+                onClick={() => { setStreamSource('direct'); setStreamError(false); }}
+                className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
+                  streamSource === 'direct' 
+                    ? 'bg-emerald-600 text-white shadow-xs' 
+                    : 'text-forest-300 hover:text-white'
+                }`}
+                title="Direct local stream from ESP32 (zero latency)"
+              >
+                <Video className="w-3 h-3" />
+                <span>ESP32 Direct</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setStreamSource('ai'); setStreamError(false); }}
+                className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1 ${
+                  streamSource === 'ai' 
+                    ? 'bg-solar-500 text-forest-950 shadow-xs font-black' 
+                    : 'text-forest-300 hover:text-white'
+                }`}
+                title="AI Vision Server stream with server-side rendered boxes"
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>AI Stream</span>
+              </button>
+            </div>
+          )}
+
           {/* Snapshot Button */}
           <button
             onClick={handleCaptureSnapshot}
@@ -122,7 +160,15 @@ export const LiveCameraFeed: React.FC = () => {
               src={currentStreamUrl}
               alt="ESP32 Live Field Camera"
               className="w-full h-full object-cover select-none"
-              onError={() => setStreamError(true)}
+              onError={() => {
+                // If direct port 81 failed, try port 80 stream before giving up
+                if (streamSource === 'direct' && currentStreamUrl === esp32DirectStreamUrl) {
+                  const img = document.querySelector('img[alt="ESP32 Live Field Camera"]') as HTMLImageElement;
+                  if (img) img.src = esp32Port80StreamUrl;
+                } else {
+                  setStreamError(true);
+                }
+              }}
             />
             <AIDetectionOverlay detections={detections} />
           </div>

@@ -18,7 +18,7 @@ import {
   Cloud
 } from 'lucide-react';
 import { AcousticWaveformVisualizer } from '../components/layout/AcousticWaveformVisualizer';
-import { checkAIServerStatus, updateAIServerConfig } from '../services/api';
+import { checkAIServerStatus, updateAIServerConfig, cleanHostOrIp } from '../services/api';
 import { DeviceConfig } from '../types';
 
 export const SettingsPage: React.FC = () => {
@@ -35,8 +35,8 @@ export const SettingsPage: React.FC = () => {
   } = useDevice();
 
   const [formConfig, setFormConfig] = useState<DeviceConfig>({
-    esp32Ip: config.esp32Ip || '192.168.100.135',
-    wsUrl: config.wsUrl || 'ws://192.168.100.135:81',
+    esp32Ip: cleanHostOrIp(config.esp32Ip) || '192.168.254.106',
+    wsUrl: config.wsUrl || 'ws://192.168.254.106:81',
     mqttBrokerUrl: config.mqttBrokerUrl || 'wss://broker.hivemq.com:8884/mqtt',
     deviceId: config.deviceId || 'ECOECHO-01',
     aiApiEndpoint: config.aiApiEndpoint || 'https://ecoecho-backend-1a6d.onrender.com/api/detect',
@@ -74,13 +74,20 @@ export const SettingsPage: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateConfig(formConfig);
+    const cleanIp = cleanHostOrIp(formConfig.esp32Ip);
+    const sanitizedConfig = {
+      ...formConfig,
+      esp32Ip: cleanIp,
+      wsUrl: `ws://${cleanIp}:81`
+    };
+    setFormConfig(sanitizedConfig);
+    updateConfig(sanitizedConfig);
 
-    await updateAIServerConfig(formConfig, {
+    await updateAIServerConfig(sanitizedConfig, {
       cameraSource: 'esp32',
-      confidenceThreshold: formConfig.sensitivityThreshold,
-      sensitivityThreshold: formConfig.sensitivityThreshold,
-      esp32Url: `http://${formConfig.esp32Ip}/capture`
+      confidenceThreshold: sanitizedConfig.sensitivityThreshold,
+      sensitivityThreshold: sanitizedConfig.sensitivityThreshold,
+      esp32Url: `http://${cleanIp}/capture`
     });
 
     setIsSaved(true);
@@ -90,8 +97,8 @@ export const SettingsPage: React.FC = () => {
 
   const handleResetDefaults = () => {
     const defaults: DeviceConfig = {
-      esp32Ip: '192.168.100.135',
-      wsUrl: 'ws://192.168.100.135:81',
+      esp32Ip: '192.168.254.106',
+      wsUrl: 'ws://192.168.254.106:81',
       mqttBrokerUrl: 'wss://broker.hivemq.com:8884/mqtt',
       deviceId: 'ECOECHO-01',
       aiApiEndpoint: 'https://ecoecho-backend-1a6d.onrender.com/api/detect',
@@ -279,10 +286,10 @@ export const SettingsPage: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setFormConfig({ ...formConfig, esp32Ip: '192.168.100.135' })}
+              onClick={() => setFormConfig({ ...formConfig, esp32Ip: '192.168.254.106' })}
               className="text-[11px] font-bold px-2.5 py-1 bg-white hover:bg-forest-100 text-forest-900 rounded-lg border border-forest-200 transition-colors cursor-pointer"
             >
-              📡 Wi-Fi ESP32 (192.168.100.135)
+              📡 Wi-Fi ESP32 (192.168.254.106)
             </button>
             <button
               type="button"

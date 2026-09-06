@@ -43,14 +43,18 @@ def normalize_esp32_url(raw_url: str) -> str:
     """Normalizes an IP address or URL into a valid ESP32 capture endpoint."""
     if not raw_url:
         return "http://192.168.4.1/capture"
-    url = raw_url.strip()
-    if not url.startswith("http://") and not url.startswith("https://"):
-        url = "http://" + url
+    url = str(raw_url).strip()
+    # Strip all leading http:// or https:// (even if repeated)
+    while url.lower().startswith("http://") or url.lower().startswith("https://"):
+        if url.lower().startswith("http://"):
+            url = url[7:]
+        elif url.lower().startswith("https://"):
+            url = url[8:]
+    url = url.strip("/")
     # If no path specified, default to /capture
-    parts = url.split("://", 1)[1]
-    if "/" not in parts:
-        url = url.rstrip("/") + "/capture"
-    return url
+    if "/" not in url:
+        url = url + "/capture"
+    return "http://" + url
 
 # Configuration & Defaults
 DEFAULT_CAMERA_SOURCE = os.environ.get("CAMERA_SOURCE", "esp32").lower()  # 'esp32' or 'webcam'

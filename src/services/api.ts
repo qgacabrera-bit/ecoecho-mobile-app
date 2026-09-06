@@ -9,17 +9,28 @@ import { DeviceConfig, DeviceMode, DeviceTelemetry, AIDetectionEvent, PestType, 
 
 const CONFIG_STORAGE_KEY = 'ecoecho_device_config';
 
+export function cleanHostOrIp(input: string): string {
+  if (!input) return '';
+  return input
+    .trim()
+    .replace(/^https?:\/\//i, '')
+    .replace(/^https?:\/\//i, '')
+    .replace(/:\d+.*$/, '')
+    .replace(/\/.*$/, '');
+}
+
 export const getDefaultConfig = (): DeviceConfig => {
   const saved = localStorage.getItem(CONFIG_STORAGE_KEY);
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
+      const cleanIp = cleanHostOrIp(parsed.esp32Ip) || '192.168.254.106';
       return {
         ...parsed,
         aiServerUrl: parsed.aiServerUrl || 'https://ecoecho-backend-1a6d.onrender.com',
         aiApiEndpoint: parsed.aiApiEndpoint || 'https://ecoecho-backend-1a6d.onrender.com/api/detect',
-        esp32Ip: parsed.esp32Ip || '192.168.100.135',
-        wsUrl: parsed.wsUrl || 'ws://192.168.100.135:81',
+        esp32Ip: cleanIp,
+        wsUrl: `ws://${cleanIp}:81`,
         mqttBrokerUrl: parsed.mqttBrokerUrl || 'wss://broker.hivemq.com:8884/mqtt',
         deviceId: parsed.deviceId || 'ECOECHO-01',
         cameraSource: parsed.cameraSource || 'ESP32',
@@ -30,8 +41,8 @@ export const getDefaultConfig = (): DeviceConfig => {
     }
   }
   return {
-    esp32Ip: '192.168.100.135',
-    wsUrl: 'ws://192.168.100.135:81',
+    esp32Ip: '192.168.254.106',
+    wsUrl: 'ws://192.168.254.106:81',
     mqttBrokerUrl: 'wss://broker.hivemq.com:8884/mqtt',
     deviceId: 'ECOECHO-01',
     aiApiEndpoint: 'https://ecoecho-backend-1a6d.onrender.com/api/detect',
