@@ -18,7 +18,6 @@ import {
   Bug,
   VolumeX
 } from 'lucide-react';
-import { AcousticWaveformVisualizer } from '../components/layout/AcousticWaveformVisualizer';
 import { HardwareExplodedView } from '../components/about/HardwareExplodedView';
 import { PestIntelligenceShowcase } from '../components/about/PestIntelligenceShowcase';
 
@@ -53,24 +52,6 @@ export const AboutPage: React.FC = () => {
       {/* 3D Hardware Exploded View Interactive Section (The Engineering Solution) */}
       <HardwareExplodedView />
 
-      {/* Acoustic Waveform Demonstration Box (Simplified Plain Language) */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-app-border shadow-xs space-y-3">
-        <div>
-          <div className="flex items-center space-x-2">
-            <h3 className="text-sm sm:text-base font-black text-forest-950">
-              Smart Pitch-Shifting Sound Shield
-            </h3>
-            <span className="bg-emerald-100 text-emerald-900 text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full border border-emerald-300">
-              20.0 – 45.0 kHz
-            </span>
-          </div>
-          <p className="text-[11px] sm:text-xs text-forest-800 font-medium mt-0.5">
-            The sound automatically shifts pitch continuously so insects cannot adapt or get used to it.
-          </p>
-        </div>
-
-        <AcousticWaveformVisualizer height={56} showDetails={true} />
-      </div>
 
       {/* High-Contrast Ecosystem Safety Grid */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-app-border shadow-xs space-y-3">

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useDevice } from '../../context/DeviceContext';
 import { DeviceMode } from '../../types';
-import { AcousticWaveformVisualizer } from '../layout/AcousticWaveformVisualizer';
 import { Radio, Zap, Sparkles, Check, Volume2, ShieldCheck } from 'lucide-react';
 
 export const ModeSwitcher: React.FC = () => {
@@ -33,7 +32,7 @@ export const ModeSwitcher: React.FC = () => {
       {/* 2 Big Farmer-Friendly Mode Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         
-        {/* Mode 1: Smart AI Shield */}
+        {/* Mode 1: Smart Shield */}
         <div
           onClick={() => handleModeChange('DYNAMIC')}
           className={`p-4 rounded-2xl border-2 cursor-pointer transition-all relative ${
@@ -49,7 +48,7 @@ export const ModeSwitcher: React.FC = () => {
               }`}>
                 <Zap className="w-4 h-4" />
               </div>
-              <h4 className="text-sm font-black">Smart AI Shield</h4>
+              <h4 className="text-sm font-black">Smart Shield</h4>
             </div>
             {mode === 'DYNAMIC' && (
               <span className="bg-solar-400 text-forest-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
@@ -92,9 +91,6 @@ export const ModeSwitcher: React.FC = () => {
         </div>
 
       </div>
-
-      {/* Acoustic Waveform Visualizer */}
-      <AcousticWaveformVisualizer showDetails={false} />
 
     </div>
   );

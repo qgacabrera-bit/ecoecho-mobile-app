@@ -51,7 +51,7 @@ export const DeviceStatusHeader: React.FC = () => {
               {isAlarmOrJamming
                 ? `Repelling pest at ${telemetry.currentFrequencyKhz.toFixed(1)} kHz`
                 : mode === 'DYNAMIC'
-                ? 'Smart AI Camera Active'
+                ? 'Smart Camera Active'
                 : `Continuous Sound Sweep (${minKhz}–${maxKhz} kHz)`}
             </span>
           </div>
@@ -71,7 +71,7 @@ export const DeviceStatusHeader: React.FC = () => {
 
       {/* Collapsible Technical Details */}
       {showTechDetails && (
-        <div className="p-3 bg-forest-950 text-white rounded-2xl border border-forest-800 text-[11px] font-mono grid grid-cols-2 sm:grid-cols-4 gap-2.5 animate-in fade-in duration-200">
+        <div className="p-3 bg-forest-950 text-white rounded-2xl border border-forest-800 text-[11px] font-mono grid grid-cols-3 gap-2.5 animate-in fade-in duration-200">
           <div>
             <span className="text-forest-400 block text-[9px] uppercase">Device IP</span>
             <span className="font-bold text-forest-200">{telemetry.esp32Ip}</span>
@@ -83,10 +83,6 @@ export const DeviceStatusHeader: React.FC = () => {
           <div>
             <span className="text-forest-400 block text-[9px] uppercase">Uptime</span>
             <span className="font-bold text-forest-200">{formatUptime(telemetry.uptimeSeconds)}</span>
-          </div>
-          <div>
-            <span className="text-forest-400 block text-[9px] uppercase">AI Engine</span>
-            <span className="font-bold text-emerald-300">best.onnx (On-Device)</span>
           </div>
         </div>
       )}
