@@ -2,15 +2,11 @@ import React, { useState } from 'react';
 import { useDevice } from '../context/DeviceContext';
 import { 
   Wifi, 
-  Zap, 
   Save, 
   CheckCircle2, 
-  Square, 
   RotateCcw, 
-  Smartphone, 
-  Volume2
+  Smartphone 
 } from 'lucide-react';
-import { AcousticWaveformVisualizer } from '../components/layout/AcousticWaveformVisualizer';
 import { cleanHostOrIp } from '../services/api';
 import { DeviceConfig } from '../types';
 
@@ -18,9 +14,6 @@ export const SettingsPage: React.FC = () => {
   const { 
     config, 
     updateConfig, 
-    isTestingSweep, 
-    triggerTestSweep, 
-    stopTestSweep,
     installPwa,
     isInstalled,
     pwaInstallPrompt 
@@ -274,44 +267,7 @@ export const SettingsPage: React.FC = () => {
         )}
       </form>
 
-      {/* 3. Safe Sound Test Tool */}
-      <div className="bg-gradient-to-br from-forest-950 via-forest-900 to-forest-950 text-white p-5 sm:p-6 rounded-3xl border border-forest-800 shadow-lg space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center space-x-2">
-              <Zap className="w-5 h-5 text-solar-400" />
-              <h3 className="text-base font-black text-white">Manual Sound Test Tool</h3>
-            </div>
-            <p className="text-xs text-forest-200 mt-0.5">
-              Audition the acoustic sweep safely through an audible test tone simulator.
-            </p>
-          </div>
 
-          <div className="shrink-0">
-            {isTestingSweep ? (
-              <button
-                type="button"
-                onClick={stopTestSweep}
-                className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
-              >
-                <Square className="w-3.5 h-3.5 fill-current" />
-                <span>Stop Sound Test</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => triggerTestSweep(4)}
-                className="bg-solar-500 hover:bg-solar-400 text-forest-950 font-black text-xs px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
-              >
-                <Volume2 className="w-4 h-4 text-forest-950" />
-                <span>Test Sound Sweep (4s)</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        <AcousticWaveformVisualizer showDetails={false} />
-      </div>
 
       {/* 4. Mobile App Install Card */}
       {!isInstalled && (
