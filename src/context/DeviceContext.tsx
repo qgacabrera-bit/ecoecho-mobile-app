@@ -17,6 +17,12 @@ import {
   triggerFrequencyTest as apiTriggerTest
 } from '../services/api';
 import { playAudibleSweepSimulation } from '../services/audioSimulator';
+import { 
+  loadCachedDetectionLogs, 
+  saveDetectionLogs, 
+  loadLogsFromIndexedDb, 
+  clearDetectionLogsDb 
+} from '../services/logDatabase';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -66,10 +72,26 @@ export const DeviceProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [activeTestFrequency, setActiveTestFrequency] = useState<number>(30.0);
   const [stopAudioCallback, setStopAudioCallback] = useState<(() => void) | null>(null);
 
-  // AI Pest Detection state (Real best.pt detections)
+  // AI Pest Detection state (Real best.pt detections + persistent cached database)
   const [isSimulatingPests, setIsSimulatingPests] = useState<boolean>(false);
   const [detections, setDetections] = useState<AIDetectionEvent[]>([]);
-  const [detectionHistory, setDetectionHistory] = useState<AIDetectionEvent[]>([]);
+  const [detectionHistory, setDetectionHistory] = useState<AIDetectionEvent[]>(() => loadCachedDetectionLogs());
+
+  // Restore & sync historical logs from IndexedDB cache database on startup
+  useEffect(() => {
+    loadLogsFromIndexedDb().then((idbLogs) => {
+      if (idbLogs && idbLogs.length > 0) {
+        setDetectionHistory(prev => {
+          if (prev.length === 0) return idbLogs;
+          const combined = [...prev, ...idbLogs];
+          const unique = Array.from(new Map(combined.map(item => [item.id, item])).values());
+          const merged = unique.slice(0, 200);
+          saveDetectionLogs(merged);
+          return merged;
+        });
+      }
+    }).catch(() => {});
+  }, []);
 
   // Telemetry state
   const [telemetry, setTelemetry] = useState<DeviceTelemetry>({
@@ -145,7 +167,9 @@ export const DeviceProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       setDetectionHistory(prev => {
         const combined = [...newDetections, ...prev];
         const unique = Array.from(new Map(combined.map(item => [item.id, item])).values());
-        return unique.slice(0, 50);
+        const updated = unique.slice(0, 200);
+        saveDetectionLogs(updated);
+        return updated;
       });
 
       // Trigger dynamic acoustic jamming if Brown Planthopper is detected
@@ -214,7 +238,11 @@ export const DeviceProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       : 'Automatic Sweep Active (38.0 kHz)';
     
     setDetections(prev => [event, ...prev.slice(0, 2)]);
-    setDetectionHistory(prev => [event, ...prev].slice(0, 50));
+    setDetectionHistory(prev => {
+      const updated = [event, ...prev].slice(0, 200);
+      saveDetectionLogs(updated);
+      return updated;
+    });
 
     if (mode === 'DYNAMIC') {
       setTelemetry(prev => ({
@@ -248,6 +276,7 @@ export const DeviceProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const clearDetectionLog = () => {
     setDetectionHistory([]);
     setDetections([]);
+    clearDetectionLogsDb();
   };
 
   const triggerTestSweep = async (durationSeconds: number = 3.5) => {

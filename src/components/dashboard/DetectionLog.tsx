@@ -8,7 +8,8 @@ import {
   Zap, 
   CheckCircle2, 
   ShieldCheck, 
-  Filter
+  Filter,
+  Database
 } from 'lucide-react';
 
 export const DetectionLog: React.FC = () => {
@@ -43,6 +44,10 @@ export const DetectionLog: React.FC = () => {
             </h3>
             <span className="bg-forest-100 text-forest-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
               {detectionHistory.length} Events
+            </span>
+            <span className="bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1" title="Preserved across browser reloads">
+              <Database className="w-2.5 h-2.5 text-emerald-600" />
+              <span>Saved to Device</span>
             </span>
           </div>
           <p className="text-xs text-forest-700/80 mt-0.5">
