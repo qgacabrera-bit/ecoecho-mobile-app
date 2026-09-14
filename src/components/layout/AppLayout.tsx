@@ -117,14 +117,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 <span className="font-mono">{telemetry.batteryLevel}%</span>
               </div>
 
-              {/* ESP32 Status Pill */}
-              <div className="flex items-center space-x-1.5 bg-forest-900 border border-forest-800 px-2.5 py-1 rounded-xl text-xs font-semibold">
-                <span className={`w-2 h-2 rounded-full ${
-                  telemetry.connectionStatus === 'ONLINE' ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'
-                }`} />
-                <span className="font-bold text-white text-[11px]">ESP32</span>
-              </div>
-
             </div>
 
           </div>

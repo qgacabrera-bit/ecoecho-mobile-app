@@ -98,12 +98,6 @@ export const SettingsPage: React.FC = () => {
             Calibrate detection sensitivity, sound waves, and field station IP.
           </p>
         </div>
-
-        <span className="text-[11px] font-bold px-2.5 py-1 rounded-xl flex items-center gap-1.5 border bg-emerald-50 text-emerald-900 border-emerald-300 shrink-0">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-          <span className="hidden sm:inline">📱 On-Device AI Active</span>
-          <span className="sm:hidden">AI Active</span>
-        </span>
       </div>
 
       {/* 2. Main Calibration Controls Form */}

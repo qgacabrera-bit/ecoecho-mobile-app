@@ -25,7 +25,7 @@ export const ModeSwitcher: React.FC = () => {
           Field Protection Mode
         </h3>
         <p className="text-xs text-forest-700/80 mt-0.5">
-          Choose how EcoEcho defends your crops from Brown Planthoppers.
+          Choose how EcoEcho defends your crops from Brown Planthoppers and other destructive rice pests.
         </p>
       </div>
 
