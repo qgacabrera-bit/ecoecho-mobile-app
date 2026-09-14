@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useDevice } from '../../context/DeviceContext';
 import { 
   Bug, 
@@ -8,18 +8,12 @@ import {
   Zap, 
   CheckCircle2, 
   ShieldCheck, 
-  Filter,
   Database
 } from 'lucide-react';
 
 export const DetectionLog: React.FC = () => {
   const { detectionHistory, clearDetectionLog } = useDevice();
-  const [filterBphOnly, setFilterBphOnly] = useState<boolean>(false);
-
-  const filteredLogs = detectionHistory.filter((item) => {
-    if (filterBphOnly) return String(item.pestType).toLowerCase().includes('planthopper');
-    return true;
-  });
+  const logs = detectionHistory;
 
   const exportLogsAsJson = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(detectionHistory, null, 2));
@@ -57,20 +51,6 @@ export const DetectionLog: React.FC = () => {
 
         {/* Action Controls */}
         <div className="flex items-center space-x-2 self-start sm:self-auto">
-          
-          {/* Filter Pill */}
-          <button
-            onClick={() => setFilterBphOnly(!filterBphOnly)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 border ${
-              filterBphOnly 
-                ? 'bg-forest-900 text-white border-forest-900 shadow-xs' 
-                : 'bg-forest-50 hover:bg-forest-100 text-forest-800 border-forest-200'
-            }`}
-          >
-            <Filter className="w-3 h-3" />
-            <span>{filterBphOnly ? 'Showing Planthoppers' : 'All Insects'}</span>
-          </button>
-
           {/* Export button */}
           <button
             onClick={exportLogsAsJson}
@@ -96,7 +76,7 @@ export const DetectionLog: React.FC = () => {
 
       {/* Activity Timeline List */}
       <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1">
-        {filteredLogs.length === 0 ? (
+        {logs.length === 0 ? (
           <div className="py-8 text-center bg-forest-50/50 rounded-2xl border border-dashed border-forest-200 text-forest-600 space-y-1">
             <ShieldCheck className="w-8 h-8 mx-auto text-emerald-600 opacity-80" />
             <p className="text-xs font-bold text-forest-900">No pest detections recorded yet</p>
@@ -105,8 +85,7 @@ export const DetectionLog: React.FC = () => {
             </p>
           </div>
         ) : (
-          filteredLogs.map((log) => {
-            const isBPH = String(log.pestType).toLowerCase().includes('planthopper');
+          logs.map((log) => {
             return (
               <div
                 key={log.id}
@@ -114,11 +93,7 @@ export const DetectionLog: React.FC = () => {
               >
                 {/* Left: Pest name & time */}
                 <div className="flex items-center space-x-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
-                    isBPH 
-                      ? 'bg-amber-500 text-forest-950 font-bold' 
-                      : 'bg-emerald-500 text-forest-950 font-bold'
-                  }`}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-xs bg-amber-500 text-forest-950 font-bold">
                     <Bug className="w-4 h-4" />
                   </div>
 

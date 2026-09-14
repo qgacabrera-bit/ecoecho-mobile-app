@@ -83,7 +83,7 @@ export const SupportPage: React.FC = () => {
     },
     {
       question: "Will the acoustic frequency sweep harm our farm dogs or livestock?",
-      answer: "EcoEcho's directional acoustic horns target the lower crop canopy (0.3m–1.2m above soil) where planthoppers congregate. While dogs can perceive lower ultrasonic tones, the focused directional projection and acoustic attenuation prevent disturbance outside the immediate paddy row."
+      answer: "EcoEcho's directional acoustic horns target the lower crop canopy (0.3m–1.2m above soil) where destructive pests congregate. While dogs can perceive lower ultrasonic tones, the focused directional projection and acoustic attenuation prevent disturbance outside the immediate paddy row."
     }
   ];
 
@@ -273,7 +273,7 @@ export const SupportPage: React.FC = () => {
                 rows={3}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe the issue observed (e.g. sudden planthopper swarm detected in Sector B, or camera stream offline after heavy rain)..."
+                placeholder="Describe the issue observed (e.g. sudden pest swarm detected in Sector B, or camera stream offline after heavy rain)..."
                 className="w-full px-3.5 py-2.5 bg-forest-50/60 border border-forest-200 rounded-xl text-xs text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition-all resize-none"
               />
             </div>

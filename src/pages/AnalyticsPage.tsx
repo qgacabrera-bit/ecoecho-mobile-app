@@ -30,13 +30,13 @@ import {
 } from 'lucide-react';
 
 const sevenDayPestData = [
-  { day: 'Mon', date: 'Aug 24', bph: 142, other: 24, total: 166, jammingBursts: 158 },
-  { day: 'Tue', date: 'Aug 25', bph: 185, other: 31, total: 216, jammingBursts: 202 },
-  { day: 'Wed', date: 'Aug 26', bph: 120, other: 18, total: 138, jammingBursts: 130 },
-  { day: 'Thu', date: 'Aug 27', bph: 240, other: 42, total: 282, jammingBursts: 271 }, // Spike
-  { day: 'Fri', date: 'Aug 28', bph: 98, other: 15, total: 113, jammingBursts: 108 },  // Repelled
-  { day: 'Sat', date: 'Aug 29', bph: 74, other: 12, total: 86, jammingBursts: 81 },
-  { day: 'Sun', date: 'Aug 30', bph: 45, other: 8, total: 53, jammingBursts: 50 },
+  { day: 'Mon', date: 'Aug 24', pestsDetected: 166, pestsRepelled: 158 },
+  { day: 'Tue', date: 'Aug 25', pestsDetected: 216, pestsRepelled: 202 },
+  { day: 'Wed', date: 'Aug 26', pestsDetected: 138, pestsRepelled: 130 },
+  { day: 'Thu', date: 'Aug 27', pestsDetected: 282, pestsRepelled: 271 }, // Spike
+  { day: 'Fri', date: 'Aug 28', pestsDetected: 113, pestsRepelled: 108 },  // Repelled
+  { day: 'Sat', date: 'Aug 29', pestsDetected: 86, pestsRepelled: 81 },
+  { day: 'Sun', date: 'Aug 30', pestsDetected: 53, pestsRepelled: 50 },
 ];
 
 const chemicalSprayComparisonData = [
@@ -189,7 +189,7 @@ export const AnalyticsPage: React.FC = () => {
                 <TrendingDown className="w-3.5 h-3.5" /> -68% pests
               </span>
             </div>
-            <p className="text-xs text-forest-900 font-bold mt-1">904 Brown Planthoppers stopped</p>
+            <p className="text-xs text-forest-900 font-bold mt-1">Destructive rice pests repelled</p>
           </div>
         </div>
 
@@ -244,11 +244,11 @@ export const AnalyticsPage: React.FC = () => {
                 Pest Detections Over Last 7 Days
               </h3>
               <p className="text-xs text-forest-900 font-medium">
-                Notice the Thursday spike (240 bugs) that dropped to 45 after sound defense engaged.
+                Notice the Thursday pest spike (282 pests) that dropped to 53 after sound defense engaged.
               </p>
             </div>
-            <span className="bg-amber-100 text-amber-950 text-xs font-black px-2.5 py-0.5 rounded-full border border-amber-300">
-              BPH Focus
+            <span className="bg-emerald-100 text-emerald-950 text-xs font-black px-2.5 py-0.5 rounded-full border border-emerald-300">
+              All Target Pests
             </span>
           </div>
 
@@ -256,11 +256,11 @@ export const AnalyticsPage: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={sevenDayPestData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="bphGradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="detectedGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#1B4332" stopOpacity={0.85}/>
                     <stop offset="95%" stopColor="#1B4332" stopOpacity={0.1}/>
                   </linearGradient>
-                  <linearGradient id="otherGradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="repelledGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#D97706" stopOpacity={0.8}/>
                     <stop offset="95%" stopColor="#D97706" stopOpacity={0.1}/>
                   </linearGradient>
@@ -275,21 +275,21 @@ export const AnalyticsPage: React.FC = () => {
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', paddingTop: '8px' }} />
                 <Area 
                   type="monotone" 
-                  dataKey="bph" 
-                  name="Brown Planthopper (BPH)" 
+                  dataKey="pestsDetected" 
+                  name="Destructive Pests Detected" 
                   stroke="#0B1D14" 
                   strokeWidth={3} 
                   fillOpacity={1} 
-                  fill="url(#bphGradient)" 
+                  fill="url(#detectedGradient)" 
                 />
                 <Area 
                   type="monotone" 
-                  dataKey="other" 
-                  name="Other Rice Pests" 
+                  dataKey="pestsRepelled" 
+                  name="Pests Repelled by Sound" 
                   stroke="#D97706" 
                   strokeWidth={2.5} 
                   fillOpacity={1} 
-                  fill="url(#otherGradient)" 
+                  fill="url(#repelledGradient)" 
                 />
               </AreaChart>
             </ResponsiveContainer>

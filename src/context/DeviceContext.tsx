@@ -172,9 +172,8 @@ export const DeviceProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         return updated;
       });
 
-      // Trigger dynamic acoustic jamming if Brown Planthopper is detected
-      const hasBPH = newDetections.some(d => String(d.pestType).toLowerCase().includes('planthopper'));
-      if (mode === 'DYNAMIC' && hasBPH) {
+      // Trigger dynamic acoustic jamming if destructive rice pest is detected
+      if (mode === 'DYNAMIC' && newDetections.length > 0) {
         setTelemetry(prev => ({
           ...prev,
           activeJammingPulse: true,

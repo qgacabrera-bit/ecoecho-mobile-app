@@ -25,10 +25,9 @@ export const AIDetectionOverlay: React.FC<OverlayProps> = ({ detections }) => {
       {/* Bounding Box Overlays */}
       {detections.map((detection) => {
         const { bbox, id, pestType, confidence, scientificName } = detection;
-        const isBPH = pestType === 'Brown Planthopper';
         const borderColor = isJamming 
           ? 'border-solar-400 shadow-[0_0_12px_rgba(245,158,11,0.8)]' 
-          : (isBPH ? 'border-emerald-400 shadow-[0_0_10px_rgba(82,183,136,0.6)]' : 'border-amber-400');
+          : 'border-emerald-400 shadow-[0_0_10px_rgba(82,183,136,0.6)]';
         const badgeBg = isJamming ? 'bg-solar-500 text-forest-950' : 'bg-forest-900/90 text-emerald-300';
 
         return (

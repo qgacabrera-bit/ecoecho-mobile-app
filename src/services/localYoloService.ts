@@ -198,8 +198,7 @@ export async function runLocalYoloInference(
           freq: 36.0
         };
 
-        const isBPH = info.name === 'Brown Planthopper';
-        const action = isBPH && activeMode === 'DYNAMIC'
+        const action = activeMode === 'DYNAMIC'
           ? `Acoustic Jamming Active (${info.freq} kHz)`
           : `Ultrasonic Sweep Active (${info.freq} kHz)`;
 
@@ -218,7 +217,7 @@ export async function runLocalYoloInference(
           actionTaken: action,
           intensity: score > 0.80 ? 'HIGH' : 'MEDIUM',
           coordinates: `Sector ${['A-1', 'A-2', 'B-1', 'B-2', 'C-1'][i % 5]}`,
-          isDeterred: isBPH && activeMode === 'DYNAMIC'
+          isDeterred: activeMode === 'DYNAMIC'
         });
       }
     }
