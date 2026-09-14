@@ -49,7 +49,9 @@ export const DeviceStatusHeader: React.FC = () => {
             <span className="hidden xs:inline text-forest-500">•</span>
             <span className="text-forest-200/90 text-[11px] truncate">
               {isAlarmOrJamming
-                ? `Repelling pest at ${telemetry.currentFrequencyKhz.toFixed(1)} kHz`
+                ? mode === 'DYNAMIC'
+                  ? `Repelling pest at ${telemetry.currentFrequencyKhz.toFixed(1)} kHz`
+                  : `Continuous sweep active (${minKhz}–${maxKhz} kHz)`
                 : mode === 'DYNAMIC'
                 ? 'Smart Camera Active'
                 : `Continuous Sound Sweep (${minKhz}–${maxKhz} kHz)`}
@@ -78,7 +80,11 @@ export const DeviceStatusHeader: React.FC = () => {
           </div>
           <div>
             <span className="text-forest-400 block text-[9px] uppercase">Sound Wave</span>
-            <span className="font-bold text-solar-300">{telemetry.currentFrequencyKhz.toFixed(1)} kHz</span>
+            <span className="font-bold text-solar-300">
+              {mode === 'AUTOMATIC'
+                ? `${minKhz}–${maxKhz} kHz (Sweep)`
+                : `${telemetry.currentFrequencyKhz.toFixed(1)} kHz`}
+            </span>
           </div>
           <div>
             <span className="text-forest-400 block text-[9px] uppercase">Uptime</span>
