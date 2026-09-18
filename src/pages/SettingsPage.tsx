@@ -7,7 +7,7 @@ import {
   RotateCcw, 
   Smartphone 
 } from 'lucide-react';
-import { cleanHostOrIp } from '../services/api';
+import { cleanHostOrIp, updateAIServerConfig } from '../services/api';
 import { DeviceConfig } from '../types';
 
 export const SettingsPage: React.FC = () => {
@@ -22,10 +22,10 @@ export const SettingsPage: React.FC = () => {
   const [formConfig, setFormConfig] = useState<DeviceConfig>({
     esp32Ip: cleanHostOrIp(config.esp32Ip) || '192.168.254.106',
     wsUrl: config.wsUrl || 'ws://192.168.254.106:81',
-    mqttBrokerUrl: '',
+    mqttBrokerUrl: config.mqttBrokerUrl || '',
     deviceId: config.deviceId || 'ECOECHO-01',
-    aiApiEndpoint: '',
-    aiServerUrl: '',
+    aiApiEndpoint: config.aiApiEndpoint || 'https://ecoecho-backend-1a6d.onrender.com/api/detect',
+    aiServerUrl: config.aiServerUrl || 'https://ecoecho-backend-1a6d.onrender.com',
     cameraSource: 'ESP32',
     webcamIndex: 0,
     useSimulatedHardware: config.useSimulatedHardware,
@@ -44,14 +44,23 @@ export const SettingsPage: React.FC = () => {
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanIp = cleanHostOrIp(formConfig.esp32Ip) || '192.168.254.106';
+    const serverUrl = formConfig.aiServerUrl || config.aiServerUrl || 'https://ecoecho-backend-1a6d.onrender.com';
     const sanitizedConfig: DeviceConfig = {
       ...formConfig,
       esp32Ip: cleanIp,
       wsUrl: `ws://${cleanIp}:81`,
+      aiServerUrl: serverUrl,
+      aiApiEndpoint: formConfig.aiApiEndpoint || `${serverUrl}/api/detect`,
       aiEngineMode: 'ON_DEVICE'
     };
     setFormConfig(sanitizedConfig);
     updateConfig(sanitizedConfig);
+
+    // Silently propagate sensitivity to AI server in the background
+    updateAIServerConfig(sanitizedConfig, {
+      confidenceThreshold: sanitizedConfig.sensitivityThreshold,
+      sensitivityThreshold: sanitizedConfig.sensitivityThreshold
+    }).catch(() => {});
 
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
@@ -61,10 +70,10 @@ export const SettingsPage: React.FC = () => {
     const defaults: DeviceConfig = {
       esp32Ip: '192.168.254.106',
       wsUrl: 'ws://192.168.254.106:81',
-      mqttBrokerUrl: '',
+      mqttBrokerUrl: 'wss://broker.hivemq.com:8884/mqtt',
       deviceId: 'ECOECHO-01',
-      aiApiEndpoint: '',
-      aiServerUrl: '',
+      aiApiEndpoint: 'https://ecoecho-backend-1a6d.onrender.com/api/detect',
+      aiServerUrl: 'https://ecoecho-backend-1a6d.onrender.com',
       cameraSource: 'ESP32',
       webcamIndex: 0,
       useSimulatedHardware: true,
@@ -78,6 +87,10 @@ export const SettingsPage: React.FC = () => {
     };
     setFormConfig(defaults);
     updateConfig(defaults);
+    updateAIServerConfig(defaults, {
+      confidenceThreshold: 0.70,
+      sensitivityThreshold: 0.70
+    }).catch(() => {});
     setResetMessage(true);
     setTimeout(() => setResetMessage(false), 3000);
   };

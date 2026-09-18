@@ -105,35 +105,13 @@ export const LiveCameraFeed: React.FC = () => {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         isProcessing = true;
 
-        // If on-device phone inference, pass canvas directly
-        if (config.aiEngineMode === 'ON_DEVICE' || !config.aiEngineMode) {
-          detectFrameFromAI(canvas, config).then((res) => {
-            if (res.success && res.detections) {
-              pushLiveDetections(res.detections);
-            }
-          }).catch(() => {}).finally(() => {
-            isProcessing = false;
-          });
-          return;
-        }
-
-        // For remote cloud server, encode to JPEG blob
-        canvas.toBlob(async (blob) => {
-          if (!blob) {
-            isProcessing = false;
-            return;
+        detectFrameFromAI(canvas, config).then((res) => {
+          if (res.success && res.detections) {
+            pushLiveDetections(res.detections);
           }
-          try {
-            const res = await detectFrameFromAI(blob, config);
-            if (res.success && res.detections) {
-              pushLiveDetections(res.detections);
-            }
-          } catch {
-            // Ignore frame drop
-          } finally {
-            isProcessing = false;
-          }
-        }, 'image/jpeg', 0.80);
+        }).catch(() => {}).finally(() => {
+          isProcessing = false;
+        });
       } catch {
         isProcessing = false;
       }

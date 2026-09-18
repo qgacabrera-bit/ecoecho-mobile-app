@@ -32,7 +32,13 @@ let lastAttemptTime = 0;
 try {
   ort.env.wasm.numThreads = 1;
   ort.env.wasm.simd = true;
-  ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.29.0/dist/';
+  const cdnDist = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.29.0/dist/';
+  ort.env.wasm.wasmPaths = {
+    'ort-wasm-simd-threaded.wasm': `${cdnDist}ort-wasm-simd-threaded.wasm`,
+    'ort-wasm-simd-threaded.mjs': `${cdnDist}ort-wasm-simd-threaded.mjs`,
+    'ort-wasm-simd.wasm': `${cdnDist}ort-wasm-simd-threaded.wasm`,
+    'ort-wasm.wasm': `${cdnDist}ort-wasm-simd-threaded.wasm`
+  };
 } catch (e) {
   console.warn('[Local YOLO] Error setting ONNX runtime environment:', e);
 }
@@ -45,7 +51,7 @@ export async function initLocalYoloModel(onProgress?: (msg: string) => void): Pr
   if (isLoading) return false;
   
   // Prevent hammering the network if an attempt failed recently
-  if (Date.now() - lastAttemptTime < 8000) {
+  if (Date.now() - lastAttemptTime < 4000) {
     return false;
   }
   lastAttemptTime = Date.now();
@@ -58,20 +64,56 @@ export async function initLocalYoloModel(onProgress?: (msg: string) => void): Pr
     
     // Resolve model path relative to base href for PWA/GitHub Pages compatibility
     const baseUrl = import.meta.env.BASE_URL || '/';
-    const modelUrl = `${baseUrl.replace(/\/$/, '')}/models/best.onnx`;
-
-    console.log(`[Local YOLO] Fetching ONNX model buffer from: ${modelUrl}`);
-    const resp = await fetch(modelUrl);
-    if (!resp.ok) {
-      throw new Error(`Failed to fetch model file: ${resp.status} ${resp.statusText}`);
+    let cleanBase = baseUrl.trim();
+    if (!cleanBase.endsWith('/')) {
+      cleanBase += '/';
     }
-    const modelBuffer = await resp.arrayBuffer();
+    const candidateUrls = [
+      `${cleanBase}models/best.onnx`,
+      '/models/best.onnx',
+      'models/best.onnx',
+      './models/best.onnx'
+    ];
 
-    // Create session with WASM backend
-    session = await ort.InferenceSession.create(modelBuffer, {
-      executionProviders: ['wasm'],
-      graphOptimizationLevel: 'all'
-    });
+    let modelBuffer: ArrayBuffer | null = null;
+    let lastFetchError: unknown = null;
+
+    for (const url of candidateUrls) {
+      try {
+        console.log(`[Local YOLO] Attempting fetch from: ${url}`);
+        const resp = await fetch(url);
+        if (resp.ok) {
+          modelBuffer = await resp.arrayBuffer();
+          console.log(`[Local YOLO] Successfully fetched model from ${url} (${modelBuffer.byteLength} bytes)`);
+          break;
+        }
+      } catch (e) {
+        lastFetchError = e;
+      }
+    }
+
+    if (!modelBuffer || modelBuffer.byteLength === 0) {
+      throw new Error(`Failed to fetch model file from candidate URLs: ${String(lastFetchError || '404 Not Found')}`);
+    }
+
+    // Create session with WASM backend (with WebGL fallback)
+    try {
+      session = await ort.InferenceSession.create(modelBuffer, {
+        executionProviders: ['wasm'],
+        graphOptimizationLevel: 'all'
+      });
+    } catch (wasmErr) {
+      console.warn('[Local YOLO] WASM session failed, trying webgl backend:', wasmErr);
+      try {
+        session = await ort.InferenceSession.create(modelBuffer, {
+          executionProviders: ['webgl'],
+          graphOptimizationLevel: 'all'
+        });
+      } catch (webglErr) {
+        console.warn('[Local YOLO] WebGL session failed:', webglErr);
+        throw wasmErr;
+      }
+    }
 
     console.log('[Local YOLO] ✅ best.onnx loaded into local browser memory successfully!');
     if (onProgress) onProgress('AI Model Ready (Local On-Device Engine)');
@@ -185,7 +227,7 @@ export async function runLocalYoloInference(
       const score = data[offset + 4];
       const clsId = Math.round(data[offset + 5]);
 
-      if (score >= confidenceThreshold && score > 0.05) {
+      if (score >= confidenceThreshold && score > 0.01) {
         // Normalize coordinates to percentages (0 to 100)
         const pctX = Math.max(0, Math.min(100, (x1 / 640) * 100));
         const pctY = Math.max(0, Math.min(100, (y1 / 640) * 100));

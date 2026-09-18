@@ -172,87 +172,94 @@ export async function detectFrameFromAI(
   const conf = config.sensitivityThreshold ?? 0.70;
 
   // 1. On-Device Phone / Browser Inference (100% Offline, Zero Render RAM OOM)
-  if (config.aiEngineMode === 'ON_DEVICE' || !config.aiEngineMode) {
-    try {
-      let sourceElement: HTMLImageElement | HTMLCanvasElement;
-      let isTempBlob = false;
-
-      if (imageData instanceof HTMLCanvasElement || imageData instanceof HTMLImageElement) {
-        sourceElement = imageData;
-      } else {
-        sourceElement = await loadImageFromPayload(imageData);
-        isTempBlob = (imageData instanceof Blob);
-      }
-
-      const localRes = await runLocalYoloInference(sourceElement, conf, 'AUTOMATIC');
-      if (isTempBlob && sourceElement instanceof HTMLImageElement && sourceElement.src.startsWith('blob:')) {
-        URL.revokeObjectURL(sourceElement.src);
-      }
-
-      if (localRes.success) {
-        return {
-          ...localRes,
-          source: 'on_device'
-        };
-      }
-      return { success: false, detections: [], inferenceMs: 0 };
-    } catch (localErr) {
-      console.warn('[EcoEcho API] On-device inference error:', localErr);
-      return { success: false, detections: [], inferenceMs: 0 };
-    }
-  }
-
-  // 2. Cloud Server Inference (Render or Local PC) - Only when explicitly configured
   try {
-    let response: Response;
-    const url = `${config.aiServerUrl}/api/detect?conf=${conf}`;
+    let sourceElement: HTMLImageElement | HTMLCanvasElement;
+    let isTempBlob = false;
 
-    if (typeof imageData === 'string') {
-      response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          image: imageData,
-          confidenceThreshold: conf
-        }),
-        signal: AbortSignal.timeout(6000)
-      });
-    } else if (imageData instanceof Blob || imageData instanceof File) {
-      const formData = new FormData();
-      formData.append('file', imageData);
-      formData.append('confidenceThreshold', String(conf));
-      response = await fetch(url, {
-        method: 'POST',
-        body: formData,
-        signal: AbortSignal.timeout(6000)
-      });
+    if (imageData instanceof HTMLCanvasElement || imageData instanceof HTMLImageElement) {
+      sourceElement = imageData;
     } else {
-      const canvas = document.createElement('canvas');
-      canvas.width = (imageData as HTMLImageElement).naturalWidth || (imageData as HTMLCanvasElement).width || 640;
-      canvas.height = (imageData as HTMLImageElement).naturalHeight || (imageData as HTMLCanvasElement).height || 480;
-      const ctx = canvas.getContext('2d');
-      if (ctx) ctx.drawImage(imageData, 0, 0);
-      const b64 = canvas.toDataURL('image/jpeg', 0.85);
-      response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: b64, confidenceThreshold: conf }),
-        signal: AbortSignal.timeout(6000)
-      });
+      sourceElement = await loadImageFromPayload(imageData);
+      isTempBlob = (imageData instanceof Blob);
     }
 
-    if (response.ok) {
-      const data = await response.json();
+    const localRes = await runLocalYoloInference(sourceElement, conf, 'AUTOMATIC');
+    if (isTempBlob && sourceElement instanceof HTMLImageElement && sourceElement.src.startsWith('blob:')) {
+      URL.revokeObjectURL(sourceElement.src);
+    }
+
+    if (localRes.success && localRes.detections) {
       return {
-        success: true,
-        detections: data.detections || [],
-        inferenceMs: data.inferenceMs || 0,
-        annotatedImage: data.annotatedImage,
-        source: 'cloud'
+        ...localRes,
+        source: 'on_device'
       };
     }
-  } catch (err) {
-    console.warn('[EcoEcho API] Cloud detectFrameFromAI error:', err);
+  } catch (localErr) {
+    console.warn('[EcoEcho API] On-device inference notice, checking AI server fallback:', localErr);
+  }
+
+  // 2. AI Server Fallback (Local PC ai_server.py or Cloud)
+  const candidateHosts = [
+    config.aiServerUrl,
+    'http://127.0.0.1:5000',
+    'https://ecoecho-backend-1a6d.onrender.com'
+  ].filter((h, i, arr): h is string => Boolean(h && h.trim() && arr.indexOf(h) === i));
+
+  for (const host of candidateHosts) {
+    try {
+      const cleanHost = host.replace(/\/$/, '');
+      const url = `${cleanHost}/api/detect?conf=${conf}`;
+      let response: Response;
+
+      if (typeof imageData === 'string') {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            image: imageData,
+            confidenceThreshold: conf
+          }),
+          signal: AbortSignal.timeout(3000)
+        });
+      } else if (imageData instanceof Blob || imageData instanceof File) {
+        const formData = new FormData();
+        formData.append('file', imageData);
+        formData.append('confidenceThreshold', String(conf));
+        response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          signal: AbortSignal.timeout(3000)
+        });
+      } else {
+        const canvas = document.createElement('canvas');
+        canvas.width = (imageData as HTMLImageElement).naturalWidth || (imageData as HTMLCanvasElement).width || 640;
+        canvas.height = (imageData as HTMLImageElement).naturalHeight || (imageData as HTMLCanvasElement).height || 480;
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.drawImage(imageData, 0, 0);
+        const b64 = canvas.toDataURL('image/jpeg', 0.85);
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: b64, confidenceThreshold: conf }),
+          signal: AbortSignal.timeout(3000)
+        });
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success || data.detections !== undefined) {
+          return {
+            success: true,
+            detections: data.detections || [],
+            inferenceMs: data.inferenceMs || 0,
+            annotatedImage: data.annotatedImage,
+            source: cleanHost.includes('127.0.0.1') ? 'local_pc' : 'cloud'
+          };
+        }
+      }
+    } catch {
+      // Try next host
+    }
   }
 
   return { success: false, detections: [], inferenceMs: 0 };
@@ -268,13 +275,14 @@ export async function fetchDeviceStatus(config: DeviceConfig): Promise<DeviceTel
   let cameraConnected = false;
   let webcamConnected = false;
 
-  // If in ON_DEVICE mode, query local onnx model readiness without hitting cloud server
-  if (config.aiEngineMode === 'ON_DEVICE' || !config.aiEngineMode) {
-    aiOnline = isLocalModelReady();
-    fps = aiOnline ? 30 : 0;
+  // Check local model readiness or check AI server
+  if (isLocalModelReady()) {
+    aiOnline = true;
+    fps = 30;
   } else {
     try {
-      const aiStatus = await checkAIServerStatus(config.aiServerUrl);
+      const serverUrl = config.aiServerUrl || 'http://127.0.0.1:5000';
+      const aiStatus = await checkAIServerStatus(serverUrl);
       aiOnline = aiStatus.online;
       fps = aiStatus.fps;
       inferMs = aiStatus.lastInferenceMs;
@@ -535,7 +543,11 @@ export async function triggerAIPestTest(
   if (config.aiEngineMode === 'ON_DEVICE' || !config.aiEngineMode) {
     try {
       const baseUrl = import.meta.env.BASE_URL || '/';
-      const sampleUrl = `${baseUrl.replace(/\/$/, '')}/greenleafhopper.jpg`;
+      let cleanBase = baseUrl.trim();
+      if (!cleanBase.endsWith('/')) {
+        cleanBase += '/';
+      }
+      const sampleUrl = `${cleanBase}greenleafhopper.jpg`;
       const img = await loadImageFromPayload(sampleUrl);
       const localRes = await runLocalYoloInference(img, conf, currentMode);
       if (localRes.success && localRes.detections.length > 0) {
@@ -547,30 +559,39 @@ export async function triggerAIPestTest(
         };
       }
     } catch (localErr) {
-      console.warn('[EcoEcho API] Local ONNX test error, attempting cloud fallback:', localErr);
+      console.warn('[EcoEcho API] Local ONNX test error, attempting server fallback:', localErr);
     }
   }
 
-  // 2. Cloud server fallback (Render or Local PC)
-  try {
-    const res = await fetch(`${config.aiServerUrl}/api/test-pest?conf=${conf}`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(5000)
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.detections && data.detections.length > 0) {
-        return {
-          success: true,
-          detections: data.detections,
-          source: 'server',
-          inferenceMs: data.inferenceMs
-        };
+  // 2. AI server fallback (Local PC ai_server.py or Cloud)
+  const candidateHosts = [
+    config.aiServerUrl,
+    'http://127.0.0.1:5000',
+    'https://ecoecho-backend-1a6d.onrender.com'
+  ].filter((h, i, arr): h is string => Boolean(h && h.trim() && arr.indexOf(h) === i));
+
+  for (const host of candidateHosts) {
+    try {
+      const cleanHost = host.replace(/\/$/, '');
+      const res = await fetch(`${cleanHost}/api/test-pest?conf=${conf}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(3500)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.detections && data.detections.length > 0) {
+          return {
+            success: true,
+            detections: data.detections,
+            source: cleanHost.includes('127.0.0.1') ? 'server' : 'cloud',
+            inferenceMs: data.inferenceMs
+          };
+        }
       }
+    } catch {
+      // Continue to next host
     }
-  } catch (err) {
-    console.warn('[EcoEcho API] triggerAIPestTest cloud server fetch notice:', err);
   }
 
   // 3. Fallback high-fidelity sample
