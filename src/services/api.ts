@@ -584,7 +584,7 @@ export async function triggerAIPestTest(
           return {
             success: true,
             detections: data.detections,
-            source: cleanHost.includes('127.0.0.1') ? 'server' : 'cloud',
+            source: 'server',
             inferenceMs: data.inferenceMs
           };
         }

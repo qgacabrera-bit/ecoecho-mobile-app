@@ -34,10 +34,8 @@ try {
   ort.env.wasm.simd = true;
   const cdnDist = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.29.0/dist/';
   ort.env.wasm.wasmPaths = {
-    'ort-wasm-simd-threaded.wasm': `${cdnDist}ort-wasm-simd-threaded.wasm`,
-    'ort-wasm-simd-threaded.mjs': `${cdnDist}ort-wasm-simd-threaded.mjs`,
-    'ort-wasm-simd.wasm': `${cdnDist}ort-wasm-simd-threaded.wasm`,
-    'ort-wasm.wasm': `${cdnDist}ort-wasm-simd-threaded.wasm`
+    wasm: `${cdnDist}ort-wasm-simd-threaded.wasm`,
+    mjs: `${cdnDist}ort-wasm-simd-threaded.mjs`
   };
 } catch (e) {
   console.warn('[Local YOLO] Error setting ONNX runtime environment:', e);
